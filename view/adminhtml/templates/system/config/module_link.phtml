@@ -1,0 +1,35 @@
+<?php
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ *
+ * Stores > Configuration: the state of the connection and the way to the module page. Styled by the admin
+ * theme only; the stylesheet of the module is not loaded on the configuration page.
+ *
+ * @var \Ovebot\Chat\Block\Adminhtml\System\Config\ModuleLink $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+// $escaper is given to templates only on newer Magento versions; the block has the same escape methods
+$escaper = isset($escaper) ? $escaper : $block;
+$label = $block->getConnectionLabel();
+?>
+<div class="control-value">
+    <strong><?= $escaper->escapeHtml($block->isConnected() ? __('Connected') : __('Not connected')) ?></strong>
+    <?php if ($block->isConnected() && $label !== ''): ?>
+        &middot; <?= $escaper->escapeHtml($label) ?>
+    <?php endif; ?>
+</div>
+<p class="note">
+    <span>
+        <?= $escaper->escapeHtml(__(
+            'The connection, the chat widget, the product feed and the order tracking are set on the module page.'
+        )) ?>
+    </span>
+</p>
+<a class="action-default" href="<?= $escaper->escapeUrl($block->getModuleUrl()) ?>">
+    <?= $escaper->escapeHtml(__('Open Ovebot AI')) ?>
+</a>

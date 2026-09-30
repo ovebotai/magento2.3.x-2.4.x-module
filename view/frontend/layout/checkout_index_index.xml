@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<!-- The checkout page, where the payment data is typed: no script of a third party runs there, so the chat widget
+     is left out. The cart and the order success page keep it (the success page reports the purchase). -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="ovebot.chat.widget" remove="true"/>
+    </body>
+</page>

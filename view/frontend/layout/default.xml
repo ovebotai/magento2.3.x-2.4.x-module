@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <!-- The chat widget on every page, except the checkout (checkout_index_index.xml,
+             multishipping_checkout.xml). Not cacheable="false": that would take every page out of the full
+             page cache; the block has a cache tag instead (Ovebot\Chat\Block\Widget::getIdentities) -->
+        <referenceContainer name="before.body.end">
+            <block class="Ovebot\Chat\Block\Widget" name="ovebot.chat.widget" template="Ovebot_Chat::widget.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

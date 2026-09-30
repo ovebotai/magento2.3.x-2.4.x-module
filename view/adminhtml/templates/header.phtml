@@ -1,0 +1,49 @@
+<?php
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ *
+ * Shared header of the dashboard and of the settings: logo, title, version, connection badge.
+ *
+ * @var \Magento\Backend\Block\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+// $escaper is given to templates only on newer Magento versions; the block has the same escape methods
+$escaper = isset($escaper) ? $escaper : $block;
+/** @var \Ovebot\Chat\ViewModel\Adminhtml\Header $header */
+$header = $block->getData('header');
+$title = (string) $block->getData('page_title');
+$isConnected = $header->isConnected();
+?>
+<div class="ovebotai-settings-header">
+    <div class="ovebotai-logo">
+        <a href="https://ovebot.ai" target="_blank" rel="noopener noreferrer">
+            <img src="<?= $escaper->escapeUrl($block->getViewFileUrl('Ovebot_Chat::images/logo.png')) ?>"
+                 alt="Ovebot.ai" height="32">
+        </a>
+        <?php if ($title !== ''): ?>
+            <h1><?= $escaper->escapeHtml($title) ?></h1>
+        <?php endif; ?>
+        <span class="ovebotai-version">v<?= $escaper->escapeHtml($header->getVersion()) ?></span>
+    </div>
+    <span class="ovebotai-connection-badge<?= $isConnected ? '' : ' is-disconnected' ?>">
+        <span class="ovebotai-status-dot<?= $isConnected ? ' is-connected' : ' is-disconnected' ?>"></span>
+        <?= $escaper->escapeHtml($isConnected ? __('Connected') : __('Not connected')) ?>
+        <?php if ($header->getConnectionLabel() !== ''): ?>
+            &middot; <?= $escaper->escapeHtml($header->getConnectionLabel()) ?>
+        <?php endif; ?>
+        <?php if ($isConnected): ?>
+            &middot;
+            <a href="<?= $escaper->escapeUrl($header->getDisconnectUrl()) ?>"
+               class="ovebotai-disconnect-link"
+               data-ovebotai-post="1"
+               data-ovebotai-confirm="<?= $escaper->escapeHtmlAttr($header->getDisconnectConfirmation()) ?>">
+                <?= $escaper->escapeHtml(__('Disconnect')) ?>
+            </a>
+        <?php endif; ?>
+    </span>
+</div>

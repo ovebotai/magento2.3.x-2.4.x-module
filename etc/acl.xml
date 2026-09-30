@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Backend::marketing">
+                    <resource id="Ovebot_Chat::main" title="Ovebot AI" translate="title" sortOrder="100">
+                        <resource id="Ovebot_Chat::manage" title="Manage connection and settings"
+                                  translate="title" sortOrder="10"/>
+                    </resource>
+                </resource>
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Ovebot_Chat::config" title="Ovebot AI advanced settings"
+                                      translate="title" sortOrder="100"/>
+                        </resource>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

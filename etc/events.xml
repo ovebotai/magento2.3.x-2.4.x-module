@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- Global, not adminhtml: a CMS page can also be saved or deleted through the web API -->
+    <event name="cms_page_save_commit_after">
+        <observer name="ovebot_chat_cms_page_save" instance="Ovebot\Chat\Observer\CmsPageSaveAfter"/>
+    </event>
+    <event name="cms_page_delete_commit_after">
+        <observer name="ovebot_chat_cms_page_delete" instance="Ovebot\Chat\Observer\CmsPageDeleteAfter"/>
+    </event>
+</config>

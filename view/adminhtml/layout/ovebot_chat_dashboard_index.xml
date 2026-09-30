@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Ovebot_Chat::css/admin.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <!-- The container shows ONE of its children: the one named by the view the controller chose -->
+            <block class="Ovebot\Chat\Block\Adminhtml\Page" name="ovebot.chat.page"
+                   template="Ovebot_Chat::page.phtml">
+                <block class="Magento\Backend\Block\Template" name="ovebot.chat.setup" as="setup"
+                       template="Ovebot_Chat::setup.phtml">
+                    <arguments>
+                        <argument name="header" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\Header</argument>
+                        <argument name="setup" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\Setup</argument>
+                        <argument name="icons" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\Icons</argument>
+                        <argument name="link_text" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\LinkText</argument>
+                    </arguments>
+                </block>
+                <block class="Magento\Backend\Block\Template" name="ovebot.chat.dashboard" as="dashboard"
+                       template="Ovebot_Chat::dashboard.phtml">
+                    <arguments>
+                        <argument name="header" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\Header</argument>
+                        <argument name="dashboard" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\Dashboard</argument>
+                        <argument name="icons" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\Icons</argument>
+                        <argument name="link_text" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\LinkText</argument>
+                    </arguments>
+                    <block class="Magento\Backend\Block\Template" name="ovebot.chat.dashboard.header" as="header"
+                           template="Ovebot_Chat::header.phtml">
+                        <arguments>
+                            <argument name="header" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\Header</argument>
+                            <argument name="page_title" xsi:type="string" translate="true">Ovebot.ai</argument>
+                        </arguments>
+                    </block>
+                </block>
+                <block class="Magento\Backend\Block\Template" name="ovebot.chat.settings" as="settings"
+                       template="Ovebot_Chat::settings.phtml">
+                    <arguments>
+                        <argument name="settings" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\Settings</argument>
+                        <argument name="icons" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\Icons</argument>
+                    </arguments>
+                    <block class="Magento\Backend\Block\Template" name="ovebot.chat.settings.header" as="header"
+                           template="Ovebot_Chat::header.phtml">
+                        <arguments>
+                            <argument name="header" xsi:type="object">Ovebot\Chat\ViewModel\Adminhtml\Header</argument>
+                            <argument name="page_title" xsi:type="string" translate="true">Settings</argument>
+                        </arguments>
+                    </block>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

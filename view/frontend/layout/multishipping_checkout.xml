@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<!-- The steps of the checkout with several addresses (addresses, shipping, billing, overview) all include this
+     handle; the chat widget is left out of them, as on the one-page checkout. The success page does not include
+     it, so the purchase is still reported there. -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="ovebot.chat.widget" remove="true"/>
+    </body>
+</page>

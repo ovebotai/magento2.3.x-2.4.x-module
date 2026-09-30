@@ -1,0 +1,303 @@
+<?php
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ *
+ * Setup wizard: 1 Connect account, 2 Website pages, 3 Products, 4 Go live. The opening step comes from state.
+ *
+ * @var \Magento\Backend\Block\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+// $escaper is given to templates only on newer Magento versions; the block has the same escape methods
+$escaper = isset($escaper) ? $escaper : $block;
+/** @var \Ovebot\Chat\ViewModel\Adminhtml\Header $header */
+$header = $block->getData('header');
+/** @var \Ovebot\Chat\ViewModel\Adminhtml\Setup $setup */
+$setup = $block->getData('setup');
+/** @var \Ovebot\Chat\ViewModel\Adminhtml\Icons $icons */
+$icons = $block->getData('icons');
+/** @var \Ovebot\Chat\ViewModel\Adminhtml\LinkText $linkText */
+$linkText = $block->getData('link_text');
+/** @var \Ovebot\Chat\Block\Adminhtml\Page $page */
+$page = $block->getParentBlock();
+
+$step = $setup->getStep();
+$oauthError = $page ? $page->getOauthError() : '';
+$pages = $setup->getPages();
+$marker = \Ovebot\Chat\ViewModel\Adminhtml\LinkText::MARKER;
+$hidden = function (bool $isHidden): string {
+    return $isHidden ? ' ovebotai-hidden' : '';
+};
+?>
+<div class="ovebotai-setup-card" id="oveSetup">
+
+    <div class="ovebotai-setup-header">
+        <div class="ovebotai-logo">
+            <a href="https://ovebot.ai" target="_blank" rel="noopener noreferrer">
+                <img src="<?= $escaper->escapeUrl($block->getViewFileUrl('Ovebot_Chat::images/logo.png')) ?>"
+                     alt="Ovebot.ai" height="36">
+            </a>
+            <span class="ovebotai-version">v<?= $escaper->escapeHtml($header->getVersion()) ?></span>
+            <?php if ($header->isConnected()): ?>
+                <span class="ovebotai-version">
+                    <?= $escaper->escapeHtml($header->getConnectionLabel()) ?>
+                    &middot;
+                    <a href="<?= $escaper->escapeUrl($header->getDisconnectUrl()) ?>"
+                       class="ovebotai-disconnect-link"
+                       data-ovebotai-post="1"
+                       data-ovebotai-confirm="<?= $escaper->escapeHtmlAttr($header->getDisconnectConfirmation()) ?>">
+                        <?= $escaper->escapeHtml(__('Disconnect')) ?>
+                    </a>
+                </span>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="ovebotai-progress-track">
+        <div class="ovebotai-progress-bar" id="oveProgressBar"></div>
+    </div>
+
+    <div class="ovebotai-steps-nav">
+        <div class="ovebotai-steps-nav-inner">
+            <?php foreach ($setup->getStepLabels() as $number => $label): ?>
+                <?php $dotClass = ($number === $step ? ' is-active' : '') . ($number < $step ? ' is-done' : ''); ?>
+                <div class="ovebotai-step-dot<?= $escaper->escapeHtmlAttr($dotClass) ?>"
+                     data-step="<?= (int) $number ?>">
+                    <div class="ovebotai-dot-circle">
+                        <span class="dot-num"><?= (int) $number ?></span>
+                        <span class="dot-check"><?= /* @noEscape */ $icons->get('check') ?></span>
+                    </div>
+                    <span class="ovebotai-dot-label"><?= $escaper->escapeHtml($label) ?></span>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <div class="ovebotai-panels">
+
+        <?php if ($header->isUnreachable()): ?>
+            <div class="ovebotai-notice ovebotai-notice-warning">
+                <p><?= $escaper->escapeHtml(__("Couldn't reach Ovebot.ai right now")) ?></p>
+            </div>
+        <?php endif; ?>
+
+        <div class="ovebotai-panel<?= $escaper->escapeHtmlAttr($hidden($step !== 1)) ?>" data-panel="1">
+            <h2><?= $escaper->escapeHtml(__('Connect your store to Ovebot.ai')) ?></h2>
+            <p>
+                <?= $escaper->escapeHtml(
+                    __('Your AI agent learns your store and answers customers 24/7, in any language.')
+                ) ?>
+            </p>
+            <p class="ovebotai-connect-free">
+                <strong><?= $escaper->escapeHtml(__('Free forever. No credit card.')) ?></strong>
+            </p>
+
+            <?php if ($oauthError !== ''): ?>
+                <div class="ovebotai-notice ovebotai-notice-error">
+                    <p><?= $escaper->escapeHtml($oauthError) ?></p>
+                </div>
+            <?php endif; ?>
+
+            <div class="ovebotai-connect-box">
+                <div class="ovebotai-connect-actions">
+                    <a href="<?= $escaper->escapeUrl($header->getRegisterUrl()) ?>" target="_blank"
+                       rel="noopener noreferrer" class="button ovebotai-btn-trial">
+                        <?= $escaper->escapeHtml(__('Start Free')) ?> &rarr;
+                    </a>
+                    <a href="<?= $escaper->escapeUrl($header->getConnectUrl()) ?>"
+                       class="ovebotai-btn-existing-link">
+                        <?= $escaper->escapeHtml(__('I already have an account')) ?> &rarr;
+                    </a>
+                </div>
+                <p class="ovebotai-connect-note">
+                    <?= $escaper->escapeHtml(
+                        __("You'll sign in on ovebot.ai and return here to finish setup.")
+                    ) ?>
+                </p>
+            </div>
+        </div>
+
+        <div class="ovebotai-panel<?= $escaper->escapeHtmlAttr($hidden($step !== 2)) ?>" data-panel="2">
+            <h2><?= $escaper->escapeHtml(__('Teach the AI chat agent about your website')) ?></h2>
+            <p class="ovebotai-lead">
+                <?= $escaper->escapeHtml(__(
+                    'Select the pages below (e.g. About, FAQ, Shipping & Returns). Your AI agent will read them'
+                    . ' and use that information to answer your customers\' questions accurately, live in the'
+                    . ' on-site chat.'
+                )) ?>
+            </p>
+
+            <div class="ovebotai-notice ovebotai-notice-warning ovebotai-hidden" id="oveKbLimitNotice"></div>
+
+            <?php if (!$pages): ?>
+                <?php list($before, $after) = $linkText->split((string) __(
+                    'No enabled CMS pages found. You can still add knowledge base entries in your %1.',
+                    $marker
+                )); ?>
+                <p class="ovebotai-muted">
+                    <?= $escaper->escapeHtml($before) ?><a
+                        href="<?= $escaper->escapeUrl($setup->getKnowledgeBaseUrl()) ?>" target="_blank"
+                        rel="noopener noreferrer"><?= $escaper->escapeHtml(__('Ovebot.ai account')) ?></a><?=
+                        $escaper->escapeHtml($after) ?>
+                </p>
+            <?php else: ?>
+                <div class="ovebotai-pages-list">
+                    <?php foreach ($pages as $cmsPage): ?>
+                        <div class="ovebotai-page-row" data-page-id="<?= (int) $cmsPage['id'] ?>">
+                            <label class="ovebotai-page-item">
+                                <input type="checkbox" name="kb_pages[]" value="<?= (int) $cmsPage['id'] ?>"
+                                    <?php if ($cmsPage['checked']): ?>checked="checked"<?php endif; ?>>
+                                <span class="ovebotai-checkbox-mark" aria-hidden="true"></span>
+                                <div class="ovebotai-page-info">
+                                    <span class="ovebotai-page-title">
+                                        <?= $escaper->escapeHtml($cmsPage['title']) ?>
+                                    </span>
+                                    <a href="<?= $escaper->escapeUrl($cmsPage['url']) ?>"
+                                       class="ovebotai-page-view-link" target="_blank" rel="noopener noreferrer">
+                                        <?= $escaper->escapeHtml(__('View page')) ?>
+                                    </a>
+                                </div>
+                            </label>
+                            <span class="ovebotai-page-error ovebotai-hidden"></span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="ovebotai-panel<?= $escaper->escapeHtmlAttr($hidden($step !== 3)) ?>" data-panel="3">
+            <h2><?= $escaper->escapeHtml(__('Teach the AI chat agent about your products')) ?></h2>
+            <p class="ovebotai-lead ovebotai-product-msg" id="oveProductMsg">
+                <?= $escaper->escapeHtml(__('Checking how many products can be sent to your AI agent…')) ?>
+            </p>
+            <p class="ovebotai-muted ovebotai-products-note" id="oveProductVariantsNote">
+                <?= $escaper->escapeHtml(__(
+                    'The count is per product variation: a configurable product with several options (size,'
+                    . ' colour, etc.) is sent once for each variant that can be ordered, so the agent can'
+                    . ' recommend exactly the option a customer asks for.'
+                )) ?>
+            </p>
+
+            <div class="ovebotai-products-mode">
+                <label class="ovebotai-radio-item">
+                    <input type="radio" name="products_mode" value="integrated" id="oveProductsIntegrated"
+                        <?php if ($setup->isProductsBuiltin()): ?>checked="checked"<?php endif; ?>>
+                    <span class="ovebotai-radio-mark" aria-hidden="true"></span>
+                    <div class="ovebotai-radio-info">
+                        <span class="ovebotai-radio-title">
+                            <?= $escaper->escapeHtml(__('Use the built-in feed')) ?>
+                        </span>
+                        <span class="ovebotai-radio-desc">
+                            <?= $escaper->escapeHtml(__(
+                                'Only products that can be ordered right now (in stock or available on backorder)'
+                                . ' are sent to Ovebot.ai.'
+                            )) ?>
+                        </span>
+                    </div>
+                </label>
+                <label class="ovebotai-radio-item">
+                    <input type="radio" name="products_mode" value="external" id="oveProductsExternal"
+                        <?php if (!$setup->isProductsBuiltin()): ?>checked="checked"<?php endif; ?>>
+                    <span class="ovebotai-radio-mark" aria-hidden="true"></span>
+                    <div class="ovebotai-radio-info">
+                        <span class="ovebotai-radio-title">
+                            <?= $escaper->escapeHtml(__("I'll provide my own feed")) ?>
+                        </span>
+                        <?php list($before, $after) = $linkText->split((string) __(
+                            'Set up a compatible feed URL (e.g. Google Merchant) directly in your %1.',
+                            $marker
+                        )); ?>
+                        <span class="ovebotai-radio-desc">
+                            <?= $escaper->escapeHtml($before) ?><a
+                                href="<?= $escaper->escapeUrl($setup->getAgentSetupUrl()) ?>" target="_blank"
+                                rel="noopener noreferrer"><?= $escaper->escapeHtml(__('Ovebot.ai account')) ?></a><?=
+                                $escaper->escapeHtml($after) ?>
+                        </span>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div class="ovebotai-panel<?= $escaper->escapeHtmlAttr($hidden($step !== 4)) ?>" data-panel="4">
+            <div class="ovebotai-sync-idle" id="oveSyncIdle">
+                <h2><?= $escaper->escapeHtml(__('Ready to go live')) ?></h2>
+                <p class="ovebotai-lead">
+                    <?= $escaper->escapeHtml(__(
+                        'Everything is set. Click below to send the selected pages and products to Ovebot.ai -'
+                        . ' your AI chat agent will start using them right away.'
+                    )) ?>
+                </p>
+            </div>
+            <div class="ovebotai-sync-loading ovebotai-hidden" id="oveSyncLoading">
+                <div class="ovebotai-spinner-wrap">
+                    <span class="ovebotai-spinner"></span>
+                    <p id="oveSyncStatus"><?= $escaper->escapeHtml(__('Syncing with Ovebot.ai…')) ?></p>
+                </div>
+            </div>
+            <div class="ovebotai-sync-done ovebotai-hidden" id="oveSyncDone">
+                <div class="ovebotai-done-icon"><?= /* @noEscape */ $icons->get('check') ?></div>
+                <h2><?= $escaper->escapeHtml(__('All done!')) ?></h2>
+                <p class="ovebotai-lead">
+                    <?= $escaper->escapeHtml(__(
+                        'Your store is now connected to Ovebot.ai. Your AI agent is live on your website right'
+                        . ' now, ready to chat with customers, recommend products and answer order-status'
+                        . ' questions.'
+                    )) ?>
+                </p>
+                <?php if ($setup->getAgentSetupUrl() !== ''): ?>
+                    <?php list($before, $after) = $linkText->split((string) __(
+                        'Setup finished successfully - we still recommend checking the settings in your Ovebot.ai'
+                        . ' account for the selected agent, available %1. You\'ll also find more settings and'
+                        . ' customizations there that might be useful.',
+                        $marker
+                    )); ?>
+                    <p class="ovebotai-done-recommend">
+                        <?= $escaper->escapeHtml($before) ?><a
+                            href="<?= $escaper->escapeUrl($setup->getAgentSetupUrl()) ?>" target="_blank"
+                            rel="noopener noreferrer"><?= $escaper->escapeHtml(__('here')) ?></a><?=
+                            $escaper->escapeHtml($after) ?>
+                    </p>
+                <?php endif; ?>
+                <div class="ovebotai-done-actions">
+                    <a href="<?= $escaper->escapeUrl($setup->getSettingsUrl()) ?>"
+                       class="button ovebotai-btn-muted">
+                        <?= $escaper->escapeHtml(__('Go to settings')) ?>
+                    </a>
+                    <a href="<?= $escaper->escapeUrl($setup->getChatUrl()) ?>" class="button button-primary"
+                       target="_blank" rel="noopener noreferrer">
+                        <?= $escaper->escapeHtml(__('Chat with the AI agent')) ?> &rarr;
+                    </a>
+                </div>
+            </div>
+            <div class="ovebotai-sync-error ovebotai-hidden" id="oveSyncError">
+                <div class="ovebotai-notice ovebotai-notice-error" id="oveSyncErrorMsg"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="ovebotai-setup-nav" id="oveSetupNav">
+        <button type="button" class="button ovebotai-hidden" id="ovePrevBtn">
+            &larr; <?= $escaper->escapeHtml(__('Previous')) ?>
+        </button>
+        <button type="button"
+                class="button button-primary<?= $escaper->escapeHtmlAttr(
+                    $hidden($step === 1 && !$setup->isConnected())
+                ) ?>"
+                id="oveNextBtn">
+            <?= $escaper->escapeHtml(__('Next')) ?> &rarr;
+        </button>
+    </div>
+
+</div>
+<script type="text/x-magento-init">
+{
+    "#oveSetup": {
+        "Ovebot_Chat/js/setup": <?= /* @noEscape */ $setup->getJsConfigJson() ?>
+    }
+}
+</script>

@@ -1,0 +1,439 @@
+<?php
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ *
+ * Settings: the chat widget, the product feed, the order tracking API and the appearance of the widget.
+ *
+ * @var \Magento\Backend\Block\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+// $escaper is given to templates only on newer Magento versions; the block has the same escape methods
+$escaper = isset($escaper) ? $escaper : $block;
+/** @var \Ovebot\Chat\ViewModel\Adminhtml\Settings $settings */
+$settings = $block->getData('settings');
+/** @var \Ovebot\Chat\ViewModel\Adminhtml\Icons $icons */
+$icons = $block->getData('icons');
+
+$agentSetupUrl = $settings->getAgentSetupUrl();
+$hidden = function (bool $isHidden): string {
+    return $isHidden ? ' ovebotai-hidden' : '';
+};
+$switchLabel = function (bool $enabled): string {
+    return (string) ($enabled ? __('Enabled') : __('Disabled'));
+};
+?>
+<div id="oveSettings">
+
+    <?= $block->getChildHtml('header') ?>
+
+    <a href="<?= $escaper->escapeUrl($settings->getDashboardUrl()) ?>" class="ovebotai-back-link">
+        <?= /* @noEscape */ $icons->get('chevron_left') ?>
+        <?= $escaper->escapeHtml(__('Dashboard')) ?>
+    </a>
+
+    <div id="oveSettingsNotice" class="ovebotai-save-notice ovebotai-hidden"></div>
+    <div id="oveSettingsWarnings" class="ovebotai-save-notice ovebotai-notice-warning ovebotai-hidden"></div>
+
+    <form id="oveSettingsForm" class="ovebotai-settings-form" method="post"
+          action="<?= $escaper->escapeUrl($settings->getSettingsUrl()) ?>">
+        <?= $block->getBlockHtml('formkey') ?>
+
+        <div class="ovebotai-fieldset">
+            <div class="ovebotai-fieldset-legend">
+                <?= /* @noEscape */ $icons->get('chat') ?>
+                <?= $escaper->escapeHtml(__('On-site chat widget')) ?>
+            </div>
+            <div class="ovebotai-fieldset-body">
+                <div class="ovebotai-field ovebotai-field-switch">
+                    <label for="oveChatStatus">
+                        <?= $escaper->escapeHtml(__('Show the chat bubble on your site')) ?>
+                    </label>
+                    <div class="ovebotai-switch-wrap">
+                        <label class="ovebotai-switch">
+                            <input type="checkbox" name="chat_status" id="oveChatStatus" value="1"
+                                <?php if ($settings->isChatEnabled()): ?>checked="checked"<?php endif; ?>>
+                            <span class="ovebotai-switch-slider"></span>
+                        </label>
+                        <span class="ovebotai-switch-lbl" id="oveChatStatusLbl"><?=
+                            $escaper->escapeHtml($switchLabel($settings->isChatEnabled())) ?></span>
+                    </div>
+                    <p class="description">
+                        <?= $escaper->escapeHtml(__(
+                            'When enabled, the AI agent\'s chat bubble appears on the pages of your site, except'
+                            . ' the checkout page, so customers can start a conversation.'
+                        )) ?>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ovebotai-fieldset">
+            <div class="ovebotai-fieldset-legend">
+                <?= /* @noEscape */ $icons->get('rss_feed') ?>
+                <?= $escaper->escapeHtml(__('Product feed')) ?>
+            </div>
+            <div class="ovebotai-fieldset-body">
+
+                <div class="ovebotai-field ovebotai-field-switch">
+                    <label for="oveProductsRecommend"><?= $escaper->escapeHtml(__('Recommend products')) ?></label>
+                    <div class="ovebotai-switch-wrap">
+                        <label class="ovebotai-switch">
+                            <input type="checkbox" name="products_recommend" id="oveProductsRecommend" value="1"
+                                <?php if ($settings->isProductsRecommend()): ?>checked="checked"<?php endif; ?>>
+                            <span class="ovebotai-switch-slider"></span>
+                        </label>
+                        <span class="ovebotai-switch-lbl" id="oveProductsRecommendLbl"><?=
+                            $escaper->escapeHtml($switchLabel($settings->isProductsRecommend())) ?></span>
+                    </div>
+                    <p class="description">
+                        <?= $escaper->escapeHtml(__(
+                            'When enabled, your AI agent recommends products from your catalog in conversations.'
+                        )) ?>
+                    </p>
+                </div>
+
+                <div class="ovebotai-field ovebotai-field-switch">
+                    <label for="oveProductsBuiltin">
+                        <?= $escaper->escapeHtml(__('Use the built-in product feed')) ?>
+                    </label>
+                    <div class="ovebotai-switch-wrap">
+                        <label class="ovebotai-switch">
+                            <input type="checkbox" name="products_builtin" id="oveProductsBuiltin" value="1"
+                                <?php if ($settings->isProductsBuiltin()): ?>checked="checked"<?php endif; ?>>
+                            <span class="ovebotai-switch-slider"></span>
+                        </label>
+                        <span class="ovebotai-switch-lbl" id="oveProductsBuiltinLbl"><?=
+                            $escaper->escapeHtml($switchLabel($settings->isProductsBuiltin())) ?></span>
+                    </div>
+                    <p class="description">
+                        <?= $escaper->escapeHtml(__(
+                            'When off, our own feed URL stops working (returns Forbidden) and Ovebot.ai won\'t be'
+                            . ' told about it. If you have a custom feed, configure it directly at:'
+                        )) ?>
+                        <?php if ($agentSetupUrl !== ''): ?>
+                            <a href="<?= $escaper->escapeUrl($agentSetupUrl) ?>" target="_blank"
+                               rel="noopener noreferrer"><?= $escaper->escapeHtml($agentSetupUrl) ?></a>
+                        <?php endif; ?>
+                    </p>
+                </div>
+
+                <div class="ovebotai-field<?= $escaper->escapeHtmlAttr($hidden(!$settings->isProductsBuiltin())) ?>"
+                     id="oveFeedUrlField">
+                    <label for="oveFeedUrl"><?= $escaper->escapeHtml(__('Feed URL')) ?></label>
+                    <div class="ovebotai-url-row">
+                        <input type="text" class="regular-text ovebotai-readonly-url" id="oveFeedUrl"
+                               value="<?= $escaper->escapeHtmlAttr($settings->getFeedUrl()) ?>" readonly>
+                        <button type="button" class="button ovebotai-copy-btn" data-target="oveFeedUrl">
+                            <?= $escaper->escapeHtml(__('Copy')) ?>
+                        </button>
+                        <button type="button" class="button ovebotai-regen-hash-btn"
+                                aria-label="<?= $escaper->escapeHtmlAttr(__('Regenerate hash')) ?>"
+                                title="<?= $escaper->escapeHtmlAttr(__('Regenerate hash')) ?>">
+                            <?= /* @noEscape */ $icons->get('refresh') ?>
+                        </button>
+                    </div>
+                    <p class="description ovebotai-fieldset-intro">
+                        <?= $escaper->escapeHtml(__(
+                            'Ovebot.ai reads this URL periodically to keep your AI agent\'s product recommendations'
+                            . ' up to date with your catalog (stock, price, availability).'
+                        )) ?>
+                        <?= $escaper->escapeHtml(__(
+                            'The feed is rebuilt every 30 minutes at most, so catalog changes reach your AI agent'
+                            . ' with a short delay.'
+                        )) ?>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="ovebotai-fieldset">
+            <div class="ovebotai-fieldset-legend">
+                <?= /* @noEscape */ $icons->get('local_shipping') ?>
+                <?= $escaper->escapeHtml(__('Order tracking API')) ?>
+            </div>
+            <div class="ovebotai-fieldset-body">
+
+                <p class="description ovebotai-fieldset-intro">
+                    <?= $escaper->escapeHtml(__(
+                        'Ovebot.ai calls this endpoint, authenticated with the credentials below, so your AI agent'
+                        . ' can answer "Where is my order?" questions with live tracking info.'
+                    )) ?>
+                </p>
+
+                <div class="ovebotai-field ovebotai-field-switch">
+                    <label for="oveOrderEnabled"><?= $escaper->escapeHtml(__('Enable order tracking')) ?></label>
+                    <div class="ovebotai-switch-wrap">
+                        <label class="ovebotai-switch">
+                            <input type="checkbox" name="order_enabled" id="oveOrderEnabled" value="1"
+                                <?php if ($settings->isOrderEnabled()): ?>checked="checked"<?php endif; ?>>
+                            <span class="ovebotai-switch-slider"></span>
+                        </label>
+                        <span class="ovebotai-switch-lbl" id="oveOrderEnabledLbl"><?=
+                            $escaper->escapeHtml($switchLabel($settings->isOrderEnabled())) ?></span>
+                    </div>
+                    <p class="description">
+                        <?= $escaper->escapeHtml(__(
+                            'When enabled, your AI agent can look up order status and tracking.'
+                        )) ?>
+                    </p>
+                </div>
+
+                <div class="ovebotai-field">
+                    <label for="oveOrderUrl"><?= $escaper->escapeHtml(__('Endpoint URL')) ?></label>
+                    <div class="ovebotai-url-row">
+                        <input type="text" class="regular-text ovebotai-readonly-url" id="oveOrderUrl"
+                               value="<?= $escaper->escapeHtmlAttr($settings->getOrdersUrl()) ?>" readonly>
+                        <button type="button" class="button ovebotai-copy-btn" data-target="oveOrderUrl">
+                            <?= $escaper->escapeHtml(__('Copy')) ?>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ovebotai-field">
+                    <label for="oveApiUser"><?= $escaper->escapeHtml(__('API user')) ?></label>
+                    <div class="ovebotai-url-row">
+                        <input type="text" class="regular-text ovebotai-readonly-url" id="oveApiUser"
+                               value="<?= $escaper->escapeHtmlAttr($settings->getOrderUser()) ?>" readonly>
+                        <button type="button" class="button ovebotai-copy-btn" data-target="oveApiUser">
+                            <?= $escaper->escapeHtml(__('Copy')) ?>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ovebotai-field">
+                    <label for="oveApiPass"><?= $escaper->escapeHtml(__('API password')) ?></label>
+                    <div class="ovebotai-url-row">
+                        <input type="text" class="regular-text ovebotai-readonly-url" id="oveApiPass"
+                               value="<?= $escaper->escapeHtmlAttr($settings->getOrderPass()) ?>" readonly
+                               autocomplete="off">
+                        <button type="button" class="button ovebotai-copy-btn" data-target="oveApiPass">
+                            <?= $escaper->escapeHtml(__('Copy')) ?>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ovebotai-field">
+                    <button type="button" class="button ovebotai-regen-creds-btn">
+                        <?= $escaper->escapeHtml(__('Regenerate credentials')) ?>
+                    </button>
+                    <p class="description">
+                        <?= $escaper->escapeHtml(__(
+                            'Generates a new user/password pair. The old ones will stop working immediately.'
+                        )) ?>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="ovebotai-fieldset">
+            <div class="ovebotai-fieldset-legend">
+                <?= /* @noEscape */ $icons->get('brush') ?>
+                <?= $escaper->escapeHtml(__('Appearance')) ?>
+            </div>
+            <div class="ovebotai-fieldset-body">
+
+                <div class="ovebotai-field">
+                    <button type="button" class="button ovebotai-appearance-toggle" id="oveAppearanceToggle"
+                            aria-expanded="false" aria-controls="oveAppearancePanel">
+                        <?= $escaper->escapeHtml(__('Configure appearance')) ?>
+                        <span id="oveAppearanceIconMore"><?= /* @noEscape */ $icons->get('expand_more') ?></span>
+                        <span id="oveAppearanceIconLess" class="ovebotai-hidden"><?=
+                            /* @noEscape */ $icons->get('expand_less') ?></span>
+                    </button>
+                </div>
+
+                <div class="ovebotai-appearance-panel ovebotai-hidden" id="oveAppearancePanel">
+
+                    <div class="ovebotai-appearance-subhead"><?= $escaper->escapeHtml(__('Look & feel')) ?></div>
+                    <div class="ovebotai-appearance-grid">
+
+                        <div class="ovebotai-field">
+                            <label for="ove_accent_color"><?= $escaper->escapeHtml(__('Accent colour')) ?></label>
+                            <div class="ovebotai-color-wrap">
+                                <input type="color" id="ove_color_picker"
+                                       value="<?= $escaper->escapeHtmlAttr($settings->getPickerColor()) ?>">
+                                <input type="text" name="widget_accent_color" id="ove_accent_color"
+                                       class="regular-text" maxlength="7"
+                                       value="<?= $escaper->escapeHtmlAttr(
+                                           $settings->getWidgetValue('accent_color')
+                                       ) ?>"
+                                       placeholder="<?= $escaper->escapeHtmlAttr(
+                                           $settings->getPlaceholder('accent_color')
+                                       ) ?>">
+                            </div>
+                        </div>
+
+                        <div class="ovebotai-field">
+                            <label for="ove_theme"><?= $escaper->escapeHtml(__('Theme')) ?></label>
+                            <select name="widget_theme" id="ove_theme">
+                                <?php foreach ($settings->getThemeOptions() as $value => $label): ?>
+                                    <option value="<?= $escaper->escapeHtmlAttr($value) ?>"
+                                        <?php if ($settings->getWidgetValue('theme') === (string) $value): ?>
+                                            selected="selected"
+                                        <?php endif; ?>><?= $escaper->escapeHtml($label) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="ovebotai-field">
+                            <label for="ove_language"><?= $escaper->escapeHtml(__('Language')) ?></label>
+                            <select name="widget_language" id="ove_language">
+                                <?php foreach ($settings->getLanguageOptions() as $value => $label): ?>
+                                    <option value="<?= $escaper->escapeHtmlAttr($value) ?>"
+                                        <?php if ($settings->getWidgetValue('language') === (string) $value): ?>
+                                            selected="selected"
+                                        <?php endif; ?>><?= $escaper->escapeHtml($label) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="ovebotai-field">
+                            <label for="ove_audio_beep"><?= $escaper->escapeHtml(__('Audio beep')) ?></label>
+                            <select name="widget_audio_beep" id="ove_audio_beep">
+                                <?php foreach ($settings->getAudioOptions() as $value => $label): ?>
+                                    <option value="<?= $escaper->escapeHtmlAttr($value) ?>"
+                                        <?php if ($settings->getWidgetValue('audio_beep') === (string) $value): ?>
+                                            selected="selected"
+                                        <?php endif; ?>><?= $escaper->escapeHtml($label) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="ovebotai-appearance-subhead">
+                        <?= $escaper->escapeHtml(__('Position on page')) ?>
+                    </div>
+                    <div class="ovebotai-field ovebotai-field-full">
+                        <label for="ove_side"><?= $escaper->escapeHtml(__('Widget position')) ?></label>
+                        <div class="ovebotai-combo-row">
+                            <select name="widget_side" id="ove_side">
+                                <?php foreach ($settings->getSideOptions() as $value => $label): ?>
+                                    <option value="<?= $escaper->escapeHtmlAttr($value) ?>"
+                                        <?php if ($settings->getWidgetValue('side') === (string) $value): ?>
+                                            selected="selected"
+                                        <?php endif; ?>><?= $escaper->escapeHtml($label) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="ovebotai-combo-sub">
+                                <input type="number" name="widget_offset_y" id="ove_offset_y" class="small-text"
+                                       min="0" max="<?= (int) $settings->getLimit('offset_y') ?>"
+                                       value="<?= $escaper->escapeHtmlAttr($settings->getWidgetValue('offset_y')) ?>"
+                                       placeholder="<?= $escaper->escapeHtmlAttr(
+                                           $settings->getPlaceholder('offset_y')
+                                       ) ?>">
+                                <span class="ovebotai-combo-suffix">
+                                    <?= $escaper->escapeHtml(__('px offset from bottom')) ?>
+                                </span>
+                            </div>
+                            <div class="ovebotai-combo-sub">
+                                <input type="number" name="widget_offset_x" id="ove_offset_x" class="small-text"
+                                       min="0" max="<?= (int) $settings->getLimit('offset_x') ?>"
+                                       value="<?= $escaper->escapeHtmlAttr($settings->getWidgetValue('offset_x')) ?>"
+                                       placeholder="<?= $escaper->escapeHtmlAttr(
+                                           $settings->getPlaceholder('offset_x')
+                                       ) ?>">
+                                <span class="ovebotai-combo-suffix">
+                                    <?= $escaper->escapeHtml(__('px offset from the side')) ?>
+                                </span>
+                            </div>
+                        </div>
+                        <p class="description">
+                            <?= $escaper->escapeHtml(__(
+                                'Raise the offset to sit the widget above another floating button, e.g. WhatsApp.'
+                            )) ?>
+                        </p>
+                    </div>
+
+                    <div class="ovebotai-field ovebotai-field-full">
+                        <label for="ove_z_index"><?= $escaper->escapeHtml(__('Stacking order (z-index)')) ?></label>
+                        <input type="number" name="widget_z_index" id="ove_z_index" class="regular-text" min="0"
+                               max="<?= (int) $settings->getLimit('z_index') ?>"
+                               value="<?= $escaper->escapeHtmlAttr($settings->getWidgetValue('z_index')) ?>"
+                               placeholder="<?= $escaper->escapeHtmlAttr($settings->getPlaceholder('z_index')) ?>">
+                        <p class="description">
+                            <?= $escaper->escapeHtml(__(
+                                'Adjust the value to place the chat widget below/above another element on the page.'
+                            )) ?>
+                        </p>
+                    </div>
+
+                    <div class="ovebotai-appearance-subhead"><?= $escaper->escapeHtml(__('Messages')) ?></div>
+                    <div class="ovebotai-field ovebotai-field-full">
+                        <label for="ove_subtitle"><?= $escaper->escapeHtml(__('Subtitle')) ?></label>
+                        <input type="text" name="widget_subtitle" id="ove_subtitle" class="regular-text"
+                               maxlength="<?= (int) $settings->getLimit('subtitle') ?>"
+                               value="<?= $escaper->escapeHtmlAttr($settings->getWidgetValue('subtitle')) ?>"
+                               placeholder="<?= $escaper->escapeHtmlAttr(
+                                   __('e.g. Usually replies in a few minutes')
+                               ) ?>">
+                        <p class="description">
+                            <?= $escaper->escapeHtml(__("Shown under the assistant's name in the chat header.")) ?>
+                        </p>
+                    </div>
+
+                    <div class="ovebotai-field ovebotai-field-full">
+                        <label for="ove_proactive_message">
+                            <?= $escaper->escapeHtml(__('Proactive message')) ?>
+                        </label>
+                        <div class="ovebotai-combo-row">
+                            <input type="text" name="widget_proactive_message" id="ove_proactive_message"
+                                   class="regular-text"
+                                   maxlength="<?= (int) $settings->getLimit('proactive_message') ?>"
+                                   value="<?= $escaper->escapeHtmlAttr(
+                                       $settings->getWidgetValue('proactive_message')
+                                   ) ?>"
+                                   placeholder="<?= $escaper->escapeHtmlAttr(
+                                       __('e.g. Need help finding something?')
+                                   ) ?>">
+                            <div class="ovebotai-combo-sub">
+                                <input type="number" name="widget_proactive_delay" id="ove_proactive_delay"
+                                       class="small-text" min="0"
+                                       max="<?= (int) $settings->getLimit('proactive_delay') ?>"
+                                       value="<?= $escaper->escapeHtmlAttr(
+                                           $settings->getWidgetValue('proactive_delay')
+                                       ) ?>"
+                                       placeholder="<?= $escaper->escapeHtmlAttr(
+                                           $settings->getPlaceholder('proactive_delay')
+                                       ) ?>">
+                                <span class="ovebotai-combo-suffix">
+                                    <?= $escaper->escapeHtml(__('s after page load')) ?>
+                                </span>
+                            </div>
+                        </div>
+                        <p class="description">
+                            <?= $escaper->escapeHtml(__(
+                                'A short message that pops up on its own to invite visitors to chat.'
+                                . ' Leave empty to disable.'
+                            )) ?>
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="ovebotai-save-row">
+            <button type="submit" class="button button-primary button-large ovebotai-save-btn" id="oveSaveBtn">
+                <?= $escaper->escapeHtml(__('Save settings')) ?>
+            </button>
+        </div>
+
+    </form>
+
+</div>
+<script type="text/x-magento-init">
+{
+    "#oveSettings": {
+        "Ovebot_Chat/js/settings": <?= /* @noEscape */ $settings->getJsConfigJson() ?>
+    }
+}
+</script>

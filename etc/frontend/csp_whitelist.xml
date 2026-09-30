@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<!-- Content Security Policy of the storefront (Magento 2.3.5 and later; ignored before). What the chat of
+     Ovebot.ai loads, read in its scripts (2026-09-29): chat-loader.js, chat-widget.js and event.js from
+     {workspace}.ovebot.ai; its configuration and the calls of the chat from the same host; a WebSocket to
+     wss://ws.ovebot.ai; the picture of the agent; a verification frame (captcha) from {workspace}.ovebot.ai;
+     the Inter font from Google Fonts, imported by the style of the widget. The sound is made in the browser
+     (Web Audio), without a file. -->
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+    <policies>
+        <policy id="script-src">
+            <values>
+                <value id="ovebot_chat" type="host">*.ovebot.ai</value>
+            </values>
+        </policy>
+        <policy id="connect-src">
+            <values>
+                <value id="ovebot_chat" type="host">*.ovebot.ai</value>
+                <value id="ovebot_chat_ws" type="host">wss://*.ovebot.ai</value>
+            </values>
+        </policy>
+        <policy id="img-src">
+            <values>
+                <value id="ovebot_chat" type="host">*.ovebot.ai</value>
+            </values>
+        </policy>
+        <policy id="frame-src">
+            <values>
+                <value id="ovebot_chat" type="host">*.ovebot.ai</value>
+            </values>
+        </policy>
+        <policy id="style-src">
+            <values>
+                <value id="ovebot_chat_fonts" type="host">fonts.googleapis.com</value>
+            </values>
+        </policy>
+        <policy id="font-src">
+            <values>
+                <value id="ovebot_chat_fonts" type="host">fonts.gstatic.com</value>
+            </values>
+        </policy>
+    </policies>
+</csp_whitelist>

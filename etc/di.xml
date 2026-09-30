@@ -1,0 +1,202 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Storefront URLs, also when they are built in the admin area -->
+    <virtualType name="Ovebot\Chat\Model\FrontendUrlFactory" type="Magento\Framework\UrlFactory">
+        <arguments>
+            <argument name="instanceName" xsi:type="string">Magento\Framework\Url</argument>
+        </arguments>
+    </virtualType>
+    <type name="Ovebot\Chat\Model\StoreContext\StoreView">
+        <arguments>
+            <argument name="urlFactory" xsi:type="object">Ovebot\Chat\Model\FrontendUrlFactory</argument>
+        </arguments>
+    </type>
+
+    <!-- Own log: var/log/ovebot_chat.log -->
+    <virtualType name="Ovebot\Chat\Logger\Handler" type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/ovebot_chat.log</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Ovebot\Chat\Logger\Logger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="name" xsi:type="string">ovebot_chat</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Ovebot\Chat\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="Ovebot\Chat\Model\Integration">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Controller\Oauth\Callback">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Controller\Adminhtml\Connection\Connect">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Controller\Adminhtml\Connection\Disconnect">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <!-- Set on the parent, used by every AJAX action -->
+    <type name="Ovebot\Chat\Controller\Adminhtml\Ajax\AbstractAjax">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Model\KnowledgeBase\CmsResync">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Observer\CmsPageSaveAfter">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Observer\CmsPageDeleteAfter">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Controller\Feed\Index">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Model\Feed\ProductCounter">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <!-- Test shops of the authors: on a domain ending in an item, a feed asked for without "limit" gives its first
+         100 items, always the same ones; "limit=0" gives the whole feed. Without an item, no domain is limited -->
+    <type name="Ovebot\Chat\Model\Feed\DomainLimit">
+        <arguments>
+            <argument name="domains" xsi:type="array">
+                <item name="aweb" xsi:type="string">.a-web.ro</item>
+            </argument>
+            <argument name="limit" xsi:type="number">100</argument>
+        </arguments>
+    </type>
+
+    <!-- Products of the feed are read from the product tables, also where the flat catalog is switched on:
+         the flat tables hold only the attributes of the product lists -->
+    <virtualType name="Ovebot\Chat\Model\Feed\FlatCatalogOff" type="Magento\Catalog\Model\Indexer\Product\Flat\State">
+        <arguments>
+            <argument name="isAvailable" xsi:type="boolean">false</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Ovebot\Chat\Model\Feed\ProductCollection"
+                 type="Magento\Catalog\Model\ResourceModel\Product\Collection">
+        <arguments>
+            <argument name="catalogProductFlatState" xsi:type="object">Ovebot\Chat\Model\Feed\FlatCatalogOff</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="Ovebot\Chat\Model\Feed\ProductCollectionFactory"
+                 type="Magento\Catalog\Model\ResourceModel\Product\CollectionFactory">
+        <arguments>
+            <argument name="instanceName" xsi:type="string">Ovebot\Chat\Model\Feed\ProductCollection</argument>
+        </arguments>
+    </virtualType>
+    <type name="Ovebot\Chat\Model\Feed\ProductSelection">
+        <arguments>
+            <argument name="collectionFactory" xsi:type="object">Ovebot\Chat\Model\Feed\ProductCollectionFactory</argument>
+        </arguments>
+    </type>
+
+    <!-- Order lookup endpoint -->
+    <type name="Ovebot\Chat\Controller\Orders\Index">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Model\Security\RateLimiter">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+
+    <!-- Storefront widget, purchase event, chat preview -->
+    <type name="Ovebot\Chat\Model\Cache\WidgetCache">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Model\Storefront\PurchaseProvider">
+        <arguments>
+            <!-- a proxy: the session starts only when the success page asks for the purchases -->
+            <argument name="checkoutSession" xsi:type="object">Magento\Checkout\Model\Session\Proxy</argument>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\ViewModel\Purchase">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <type name="Ovebot\Chat\Controller\Adminhtml\Preview\Open">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+
+    <!-- Removal of the module data, at "bin/magento module:uninstall" with the remove-data option -->
+    <type name="Ovebot\Chat\Setup\Uninstall">
+        <arguments>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+
+    <!-- Tracking sources of the order lookup, also offered in Stores > Configuration. The item name is the code
+         of the source; a courier module adds its own item (see Ovebot\Chat\Api\TrackingFinderInterface) -->
+    <preference for="Ovebot\Chat\Api\Data\TrackingResultInterface" type="Ovebot\Chat\Model\Tracking\TrackingResult"/>
+    <type name="Ovebot\Chat\Model\Tracking\TrackingResolver">
+        <arguments>
+            <argument name="finders" xsi:type="array">
+                <item name="native" xsi:type="array">
+                    <item name="finder" xsi:type="object">Ovebot\Chat\Model\Tracking\NativeShipmentTrackFinder</item>
+                    <item name="label" xsi:type="string" translatable="true">Magento shipment tracking</item>
+                    <item name="sortOrder" xsi:type="number">10</item>
+                </item>
+            </argument>
+            <argument name="logger" xsi:type="object">Ovebot\Chat\Logger\Logger</argument>
+        </arguments>
+    </type>
+    <!-- Built-in tracking pages: carrier code or name => URL with {code}. The templates set in
+         Stores > Configuration come first. sameday, cargus and gls are not confirmed by the couriers -->
+    <type name="Ovebot\Chat\Model\Tracking\TrackingUrlResolver">
+        <arguments>
+            <argument name="templates" xsi:type="array">
+                <item name="sameday" xsi:type="string">https://sameday.ro/#awb={code}</item>
+                <item name="fancourier" xsi:type="string">https://www.fancourier.ro/awb-tracking/?tracking={code}</item>
+                <item name="fan" xsi:type="string">https://www.fancourier.ro/awb-tracking/?tracking={code}</item>
+                <item name="cargus" xsi:type="string">https://www.cargus.ro/personal/urmareste-coletul/?tracking_number={code}</item>
+                <item name="dpd" xsi:type="string">https://tracking.dpd.ro/?shipmentNumber={code}&amp;language=ro</item>
+                <item name="gls" xsi:type="string">https://gls-group.com/RO/ro/urmarire-colet/?match={code}</item>
+                <item name="fedex" xsi:type="string">https://www.fedex.com/fedextrack/?trknbr={code}</item>
+                <item name="ups" xsi:type="string">https://www.ups.com/track?tracknum={code}</item>
+                <item name="dhl" xsi:type="string">https://www.dhl.com/global-en/home/tracking/tracking-express.html?submit=1&amp;tracking-id={code}</item>
+                <item name="usps" xsi:type="string">https://tools.usps.com/go/TrackConfirmAction?tLabels={code}</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="ovebot" translate="label" sortOrder="450">
+            <label>Ovebot AI</label>
+        </tab>
+        <!-- The shop has one connection, so the options exist at the default level only -->
+        <section id="ovebot_chat" translate="label" type="text" sortOrder="10"
+                 showInDefault="1" showInWebsite="0" showInStore="0">
+            <label>Settings</label>
+            <tab>ovebot</tab>
+            <resource>Ovebot_Chat::config</resource>
+
+            <group id="general" translate="label" type="text" sortOrder="10"
+                   showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>General</label>
+                <field id="module_link" translate="label" type="label" sortOrder="10"
+                       showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Module page</label>
+                    <frontend_model>Ovebot\Chat\Block\Adminhtml\System\Config\ModuleLink</frontend_model>
+                </field>
+            </group>
+
+            <group id="orders" translate="label" type="text" sortOrder="20"
+                   showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Order tracking</label>
+                <field id="max_age_days" translate="label comment" type="text" sortOrder="10"
+                       showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Maximum order age (days)</label>
+                    <comment>Orders older than this are not returned to the AI agent. Default: 60.</comment>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                </field>
+            </group>
+
+            <group id="tracking" translate="label" type="text" sortOrder="30"
+                   showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Shipment tracking</label>
+                <field id="finders" translate="label comment" type="multiselect" sortOrder="10"
+                       showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Tracking sources</label>
+                    <source_model>Ovebot\Chat\Model\Config\Source\TrackingFinders</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <comment>Leave empty to use every available source.</comment>
+                </field>
+                <field id="urls" translate="label comment" sortOrder="20"
+                       showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Tracking URL templates</label>
+                    <frontend_model>Ovebot\Chat\Block\Adminhtml\System\Config\TrackingUrls</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                    <comment>Use {code} where the tracking number goes, e.g. https://sameday.ro/#awb={code}</comment>
+                </field>
+            </group>
+
+            <group id="developer" translate="label" type="text" sortOrder="90"
+                   showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Developer</label>
+                <field id="account_host" translate="label comment" type="text" sortOrder="10"
+                       showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Account host</label>
+                    <backend_model>Ovebot\Chat\Model\Config\Backend\Host</backend_model>
+                    <comment>Leave empty for account.ovebot.ai.</comment>
+                </field>
+                <field id="api_host" translate="label comment" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>API host</label>
+                    <backend_model>Ovebot\Chat\Model\Config\Backend\Host</backend_model>
+                    <comment>Leave empty for api.ovebot.ai.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

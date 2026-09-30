@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="ovebot_chat_connection" resource="default" engine="innodb"
+           comment="Ovebot Chat: the connection of the shop">
+        <column xsi:type="int" name="connection_id" unsigned="true" nullable="false" identity="true"
+                comment="Connection ID"/>
+        <column xsi:type="text" name="access_token" nullable="true" comment="Access token (encrypted)"/>
+        <column xsi:type="text" name="refresh_token" nullable="true" comment="Refresh token (encrypted)"/>
+        <column xsi:type="int" name="token_expires" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Access token expiry (unix time)"/>
+        <column xsi:type="varchar" name="workspace" length="64" nullable="true" comment="Workspace slug"/>
+        <column xsi:type="varchar" name="last_workspace" length="64" nullable="true"
+                comment="Workspace of the connection closed last"/>
+        <column xsi:type="varchar" name="agent" length="64" nullable="true" comment="Agent public id"/>
+        <column xsi:type="smallint" name="setup_complete" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Setup wizard finished"/>
+        <column xsi:type="smallint" name="chat_status" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Chat widget enabled"/>
+        <column xsi:type="smallint" name="products_builtin" unsigned="true" nullable="true" identity="false"
+                comment="Built-in feed is the product source (null = on)"/>
+        <column xsi:type="smallint" name="products_recommend" unsigned="true" nullable="true" identity="false"
+                comment="Product recommendations (null = on)"/>
+        <column xsi:type="smallint" name="order_enabled" unsigned="true" nullable="true" identity="false"
+                comment="Order tracking (null = on)"/>
+        <column xsi:type="text" name="widget" nullable="true" comment="Widget appearance (JSON)"/>
+        <column xsi:type="text" name="kb_page_ids" nullable="true" comment="Selected CMS page ids (JSON)"/>
+        <column xsi:type="varchar" name="feed_hash" length="64" nullable="true" comment="Feed URL hash"/>
+        <column xsi:type="varchar" name="order_user" length="128" nullable="true" comment="Order API user"/>
+        <column xsi:type="text" name="order_pass" nullable="true" comment="Order API password (encrypted)"/>
+        <column xsi:type="text" name="last_push" nullable="true" comment="Last accepted endpoint URLs (JSON)"/>
+        <column xsi:type="text" name="oauth_error" nullable="true" comment="OAuth error to show once"/>
+        <column xsi:type="int" name="oauth_error_expires" unsigned="true" nullable="false" identity="false"
+                default="0" comment="OAuth error expiry (unix time)"/>
+        <column xsi:type="varchar" name="preview_token" length="64" nullable="true" comment="Preview token"/>
+        <column xsi:type="int" name="preview_expires" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Preview token expiry (unix time)"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false"
+                default="CURRENT_TIMESTAMP" comment="Created at"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false"
+                default="CURRENT_TIMESTAMP" comment="Updated at"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="connection_id"/>
+        </constraint>
+    </table>
+    <table name="ovebot_chat_oauth_state" resource="default" engine="innodb"
+           comment="Ovebot Chat: pending OAuth authorizations">
+        <column xsi:type="varchar" name="state" length="32" nullable="false" comment="OAuth state"/>
+        <column xsi:type="varchar" name="verifier" length="128" nullable="false" comment="PKCE code verifier"/>
+        <column xsi:type="text" name="return_url" nullable="false" comment="Admin URL to return to"/>
+        <column xsi:type="int" name="admin_user_id" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Admin user who started the authorization"/>
+        <column xsi:type="int" name="expires_at" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Expiry (unix time)"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="state"/>
+        </constraint>
+        <index referenceId="OVEBOT_CHAT_OAUTH_STATE_EXPIRES_AT" indexType="btree">
+            <column name="expires_at"/>
+        </index>
+    </table>
+    <table name="ovebot_chat_rate_limit" resource="default" engine="innodb"
+           comment="Ovebot Chat: failed authentications on the order endpoint">
+        <column xsi:type="varchar" name="ip_hash" length="64" nullable="false" comment="Hashed client IP"/>
+        <column xsi:type="int" name="failures" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Failed attempts in the current window"/>
+        <column xsi:type="int" name="window_start" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Window start (unix time)"/>
+        <column xsi:type="int" name="blocked_until" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Blocked until (unix time)"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="ip_hash"/>
+        </constraint>
+        <index referenceId="OVEBOT_CHAT_RATE_LIMIT_BLOCKED_UNTIL" indexType="btree">
+            <column name="blocked_until"/>
+        </index>
+    </table>
+</schema>

@@ -1,0 +1,25 @@
+<?php
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ *
+ * Purchases of the order success page, read by widget.js, which sends them to Ovebot.ai. Placed before the widget,
+ * so they are in the page when widget.js runs.
+ *
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+// $escaper is given to templates only on newer Magento versions; the block has the same escape methods
+$escaper = isset($escaper) ? $escaper : $block;
+/** @var \Ovebot\Chat\ViewModel\Purchase $purchase */
+$purchase = $block->getData('purchase');
+$json = $purchase->getPurchasesJson();
+?>
+<?php if ($json !== ''): ?>
+    <div id="ovebot-chat-purchase" hidden="hidden"
+         data-purchases="<?= $escaper->escapeHtmlAttr($json) ?>"></div>
+<?php endif; ?>

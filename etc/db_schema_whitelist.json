@@ -1,0 +1,62 @@
+{
+    "ovebot_chat_connection": {
+        "column": {
+            "connection_id": true,
+            "access_token": true,
+            "refresh_token": true,
+            "token_expires": true,
+            "workspace": true,
+            "last_workspace": true,
+            "agent": true,
+            "setup_complete": true,
+            "chat_status": true,
+            "products_builtin": true,
+            "products_recommend": true,
+            "order_enabled": true,
+            "widget": true,
+            "kb_page_ids": true,
+            "feed_hash": true,
+            "order_user": true,
+            "order_pass": true,
+            "last_push": true,
+            "oauth_error": true,
+            "oauth_error_expires": true,
+            "preview_token": true,
+            "preview_expires": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "ovebot_chat_oauth_state": {
+        "column": {
+            "state": true,
+            "verifier": true,
+            "return_url": true,
+            "admin_user_id": true,
+            "expires_at": true
+        },
+        "index": {
+            "OVEBOT_CHAT_OAUTH_STATE_EXPIRES_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "ovebot_chat_rate_limit": {
+        "column": {
+            "ip_hash": true,
+            "failures": true,
+            "window_start": true,
+            "blocked_until": true
+        },
+        "index": {
+            "OVEBOT_CHAT_RATE_LIMIT_BLOCKED_UNTIL": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

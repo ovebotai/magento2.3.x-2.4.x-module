@@ -1,0 +1,8 @@
+# Line endings: LF in the repository and in the zip, whatever the settings of the machine that commits
+* text=auto eol=lf
+
+# Left out of the release zip and of the archives Composer downloads from the Git host
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.github export-ignore
+/Test export-ignore

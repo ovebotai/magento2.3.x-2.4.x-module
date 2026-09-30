@@ -1,0 +1,21 @@
+<?php
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ *
+ * The chat widget: the configuration in a data attribute, read by widget.js. No inline script, so the page
+ * needs no nonce or hash under a Content Security Policy. The block writes nothing when the widget is off.
+ *
+ * @var \Ovebot\Chat\Block\Widget $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+// $escaper is given to templates only on newer Magento versions; the block has the same escape methods
+$escaper = isset($escaper) ? $escaper : $block;
+?>
+<div id="ovebot-chat-config" hidden="hidden"
+     data-config="<?= $escaper->escapeHtmlAttr($block->getConfigJson()) ?>"></div>
+<script src="<?= $escaper->escapeUrl($block->getScriptUrl()) ?>" async="async"></script>

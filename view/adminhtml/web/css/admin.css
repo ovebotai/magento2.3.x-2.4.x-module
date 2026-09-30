@@ -1,0 +1,1044 @@
+/**
+ * Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+ *
+ * @author    AWeb Design SRL
+ * @copyright 2026 AWeb Design SRL
+ * @license   https://opensource.org/licenses/MIT MIT License
+ */
+
+/* Ovebot.ai admin styles, shared with the OpenCart and PrestaShop modules and adapted for the Magento admin.
+   Every selector is scoped under .ovebotai-wrap, so nothing leaks into the admin theme. Icons are inline SVG
+   (.ovebotai-icon), sized in em: the font-size of the icon sets its size. */
+
+.ovebotai-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #2c3338;
+}
+
+/* ── Admin theme neutralising rules ───────────────────────────────────────── */
+/* The Magento admin theme styles bare elements: links are underlined on hover, <button> gets a grey
+   background with its own hover, focus and active states, headings are large and light, form controls have
+   their own height and border. These rules reset them at low specificity; the component rules further down
+   still win. */
+
+.ovebotai-wrap *,
+.ovebotai-wrap *::before,
+.ovebotai-wrap *::after { box-sizing: border-box; }
+
+.ovebotai-wrap .ovebotai-hidden { display: none !important; }
+
+.ovebotai-wrap a,
+.ovebotai-wrap a:hover,
+.ovebotai-wrap a:focus { text-decoration: none; }
+
+.ovebotai-wrap h1,
+.ovebotai-wrap h2 {
+    line-height: 1.3;
+    font-weight: 600;
+}
+
+.ovebotai-wrap p { margin-top: 0; }
+
+.ovebotai-wrap label { font-weight: inherit; }
+
+.ovebotai-wrap select,
+.ovebotai-wrap input[type=text],
+.ovebotai-wrap input[type=number] {
+    height: auto;
+    min-height: 0;
+    line-height: 1.4;
+    box-shadow: none;
+}
+
+.ovebotai-wrap .ovebotai-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* Links and buttons rendered as buttons. */
+.ovebotai-wrap .button {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 7px 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #3a3670;
+    background: #efedff;
+    border: 1px solid #b9b1f0;
+    border-radius: 4px;
+    box-shadow: none;
+    text-shadow: none;
+    cursor: pointer;
+    text-decoration: none;
+    vertical-align: middle;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.ovebotai-wrap .button:hover,
+.ovebotai-wrap .button:focus,
+.ovebotai-wrap .button:active {
+    background: #e2deff;
+    border-color: #615ed6;
+    color: #2c2a5e;
+    box-shadow: 0 1px 3px rgba(97, 94, 214, 0.18);
+}
+
+.ovebotai-wrap .button.button-primary {
+    color: #fff;
+    background: #2271b1;
+    border-color: #2271b1;
+}
+
+.ovebotai-wrap .button.button-primary:hover,
+.ovebotai-wrap .button.button-primary:focus,
+.ovebotai-wrap .button.button-primary:active {
+    color: #fff;
+    background: #135e96;
+    border-color: #135e96;
+}
+
+.ovebotai-wrap .button:disabled,
+.ovebotai-wrap .button[disabled] {
+    opacity: 0.6;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* ── Setup card ──────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-setup-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    margin-top: 20px;
+    overflow: hidden;
+    overflow: clip;
+}
+
+.ovebotai-wrap .ovebotai-setup-header { padding: 24px 28px 0; }
+
+.ovebotai-wrap .ovebotai-logo { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+/* only the logo link: "Disconnect" in the wizard badge is a link inside the same box */
+.ovebotai-wrap .ovebotai-logo > a { display: block; line-height: 0; }
+.ovebotai-wrap .ovebotai-logo > a img { display: block; max-width: 160px; height: auto; }
+
+/* ── Version badge (top of every view) ───────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-version {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    color: #50575e;
+    background: #f0f0f1;
+    border: 1px solid #dcdcde;
+    border-radius: 10px;
+    padding: 3px 8px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.ovebotai-wrap a.ovebotai-version:hover { color: #2271b1; border-color: #c8dff5; background: #f0f6fc; }
+
+/* ── Progress bar ────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-progress-track { height: 3px; background: #e0e0e0; margin: 20px 0 0; }
+.ovebotai-wrap .ovebotai-progress-bar { height: 100%; background: #2271b1; transition: width 0.35s ease; width: 0; }
+
+/* ── Step dots ───────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-steps-nav {
+    padding: 0 28px;
+    margin-top: 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.ovebotai-wrap .ovebotai-steps-nav-inner {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    min-width: 480px;
+    width: 100%;
+}
+
+.ovebotai-wrap .ovebotai-steps-nav-inner::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    height: 1px;
+    background: #c3c4c7;
+    z-index: 0;
+}
+
+.ovebotai-wrap .ovebotai-step-dot { display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 1; }
+
+.ovebotai-wrap .ovebotai-dot-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f0f0f1;
+    border: 2px solid #c3c4c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #787c82;
+    transition: all 0.2s;
+}
+
+.ovebotai-wrap .dot-check { display: none; line-height: 1; }
+.ovebotai-wrap .dot-check .ovebotai-icon { font-size: 16px; }
+
+.ovebotai-wrap .ovebotai-step-dot.is-active .ovebotai-dot-circle { background: #2271b1; border-color: #2271b1; color: #fff; }
+.ovebotai-wrap .ovebotai-step-dot.is-done .ovebotai-dot-circle { background: #00a32a; border-color: #00a32a; color: #fff; }
+.ovebotai-wrap .ovebotai-step-dot.is-done .dot-num { display: none; }
+.ovebotai-wrap .ovebotai-step-dot.is-done .dot-check { display: block; }
+
+.ovebotai-wrap .ovebotai-dot-label { font-size: 11px; color: #787c82; white-space: nowrap; }
+.ovebotai-wrap .ovebotai-step-dot.is-active .ovebotai-dot-label { color: #2271b1; font-weight: 600; }
+.ovebotai-wrap .ovebotai-step-dot.is-done .ovebotai-dot-label { color: #00a32a; }
+
+/* ── Panels ──────────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-panels { padding: 28px 28px 4px; min-height: 240px; }
+.ovebotai-wrap .ovebotai-panel h2 { margin: 0 0 8px; padding: 0; font-size: 18px; font-weight: 600; color: #1d2327; }
+.ovebotai-wrap .ovebotai-panel p { margin-bottom: 14px; }
+.ovebotai-wrap .ovebotai-lead { color: #50575e; font-size: 14px; margin: 0 0 20px; }
+.ovebotai-wrap .ovebotai-muted { color: #787c82; }
+
+/* ── Connect box ─────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-connect-free { color: #1d2327; font-size: 15px; margin: -8px 0 20px; }
+.ovebotai-wrap .ovebotai-connect-free strong { font-weight: 700; }
+
+.ovebotai-wrap .ovebotai-connect-box { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 12px; }
+.ovebotai-wrap .ovebotai-connect-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+
+.ovebotai-wrap .ovebotai-connect-note { color: #787c82; font-size: 12px; margin: 4px 0 0; }
+
+.ovebotai-wrap .ovebotai-btn-existing-link {
+    font-size: 14px;
+    color: #2271b1;
+    background: none;
+    border: 0;
+    padding: 0;
+}
+
+.ovebotai-wrap .ovebotai-btn-existing-link:hover,
+.ovebotai-wrap .ovebotai-btn-existing-link:focus { color: #135e96; text-decoration: underline; }
+
+.ovebotai-wrap .button.ovebotai-btn-trial {
+    font-size: 16px;
+    font-weight: 700;
+    padding: 11px 28px;
+    background: #d63638;
+    border-color: #b32d2e;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(214, 54, 56, 0.35);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.ovebotai-wrap .button.ovebotai-btn-trial:hover,
+.ovebotai-wrap .button.ovebotai-btn-trial:focus,
+.ovebotai-wrap .button.ovebotai-btn-trial:active {
+    background: #b32d2e;
+    border-color: #b32d2e;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(214, 54, 56, 0.45);
+}
+
+/* ── Pages list ──────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-pages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 340px;
+    overflow-y: auto;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    padding: 8px;
+    background: #fafafa;
+}
+
+.ovebotai-wrap .ovebotai-page-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 10px 12px;
+    border-radius: 4px;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+    margin: 0;
+}
+
+.ovebotai-wrap .ovebotai-page-item:hover { background: #f0f6fc; border-color: #c8dff5; }
+
+.ovebotai-wrap .ovebotai-page-item input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.ovebotai-wrap .ovebotai-checkbox-mark {
+    flex-shrink: 0;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border: 2px solid #8c8f94;
+    border-radius: 3px;
+    background: #fff;
+    position: relative;
+    transition: border-color 0.15s, background 0.15s;
+    cursor: pointer;
+}
+
+.ovebotai-wrap .ovebotai-page-item input[type="checkbox"]:focus + .ovebotai-checkbox-mark { border-color: #2271b1; }
+.ovebotai-wrap .ovebotai-page-item input[type="checkbox"]:checked + .ovebotai-checkbox-mark { background: #2271b1; border-color: #2271b1; }
+
+.ovebotai-wrap .ovebotai-page-item input[type="checkbox"]:checked + .ovebotai-checkbox-mark::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+}
+
+.ovebotai-wrap .ovebotai-page-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ovebotai-wrap .ovebotai-page-title { font-size: 14px; font-weight: 500; color: #1d2327; line-height: 1.3; }
+.ovebotai-wrap .ovebotai-page-item:hover .ovebotai-page-title { color: #2271b1; }
+
+/* ── Product count message ───────────────────────────────────────────────── */
+
+/* Dimmed while "I'll provide my own feed" is selected: our count is not what gets sent. */
+.ovebotai-wrap .ovebotai-product-msg { transition: opacity 0.15s ease; }
+.ovebotai-wrap .ovebotai-product-msg.ovebotai-msg-dimmed { opacity: 0.5; }
+
+.ovebotai-wrap .ovebotai-count-badge {
+    display: inline-block;
+    background: #00a32a;
+    color: #fff;
+    border-radius: 12px;
+    padding: 1px 10px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ── Sync step ───────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 32px 0; color: #50575e; }
+
+.ovebotai-wrap .ovebotai-spinner {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    border: 3px solid #c3c4c7;
+    border-top-color: #2271b1;
+    border-radius: 50%;
+    animation: oveSpin 0.8s linear infinite;
+}
+
+@keyframes oveSpin { to { transform: rotate(360deg); } }
+
+.ovebotai-wrap .ovebotai-done-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #00a32a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 36px;
+}
+
+.ovebotai-wrap .ovebotai-sync-done { text-align: center; padding: 20px 0; }
+.ovebotai-wrap .ovebotai-done-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+.ovebotai-wrap .ovebotai-done-recommend {
+    font-size: 14px;
+    font-weight: 600;
+    color: #089d00;
+    max-width: 560px;
+    margin: 0 auto 20px;
+    line-height: 1.3;
+}
+
+.ovebotai-wrap .ovebotai-done-recommend a { color: #ffa500; font-weight: 700; }
+.ovebotai-wrap .ovebotai-done-recommend a::before { content: ">"; }
+.ovebotai-wrap .ovebotai-done-recommend a::after { content: "<"; }
+
+.ovebotai-wrap .ovebotai-btn-muted { opacity: 0.6; }
+.ovebotai-wrap .ovebotai-btn-muted:hover { opacity: 0.85; }
+
+/* ── Setup nav ───────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-setup-nav { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 28px 24px; border-top: 1px solid #f0f0f1; }
+
+/* ── Notices ─────────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 13px;
+    text-align: left;
+}
+
+/* The icon is a mask over the text colour, so the notices created from JavaScript get it too. */
+.ovebotai-wrap .ovebotai-notice::before,
+.ovebotai-wrap .ovebotai-save-notice::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    background-color: currentColor;
+    -webkit-mask: no-repeat center / contain;
+    mask: no-repeat center / contain;
+}
+
+.ovebotai-wrap .ovebotai-notice p { margin: 0; }
+.ovebotai-wrap .ovebotai-notice a { color: inherit; text-decoration: underline; }
+
+/* Two-line variant: a bold title with a softer description underneath. */
+.ovebotai-wrap .ovebotai-notice-titled { padding: 12px 16px; }
+.ovebotai-wrap .ovebotai-notice-content { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ovebotai-wrap .ovebotai-notice-title { font-weight: 700; font-size: 13px; }
+.ovebotai-wrap .ovebotai-notice-titled .ovebotai-notice-content p { opacity: 0.85; }
+
+.ovebotai-wrap .ovebotai-notice-error { background: #fcf0f1; border-left: 4px solid #d63638; color: #d63638; }
+.ovebotai-wrap .ovebotai-notice-warning { background: #fff8e5; border-left: 4px solid #dba617; color: #614200; }
+.ovebotai-wrap .ovebotai-notice-success { background: #edfaef; border-left: 4px solid #00a32a; color: #1a6a26; }
+
+.ovebotai-wrap .ovebotai-notice-error::before {
+    -webkit-mask-image: url('../images/icons/error.svg');
+    mask-image: url('../images/icons/error.svg');
+}
+
+.ovebotai-wrap .ovebotai-notice-warning::before {
+    -webkit-mask-image: url('../images/icons/warning.svg');
+    mask-image: url('../images/icons/warning.svg');
+}
+
+.ovebotai-wrap .ovebotai-notice-success::before {
+    -webkit-mask-image: url('../images/icons/check-circle.svg');
+    mask-image: url('../images/icons/check-circle.svg');
+}
+
+/* ── Dashboard cards ─────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-dashboard-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0 28px; }
+
+@media (max-width: 782px) {
+    .ovebotai-wrap .ovebotai-dashboard-cards { grid-template-columns: 1fr; }
+}
+
+.ovebotai-wrap .ovebotai-dash-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 28px 16px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    color: #1d2327;
+    font-weight: 600;
+    font-size: 14px;
+    transition: border-color 0.15s, box-shadow 0.15s, color 0.15s;
+}
+
+.ovebotai-wrap .ovebotai-dash-card:hover { border-color: #2271b1; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); color: #2271b1; }
+.ovebotai-wrap .ovebotai-dash-card-icon { font-size: 30px; line-height: 1; color: #2271b1; }
+
+.ovebotai-wrap .ovebotai-dash-card-muted { border-style: dashed; color: #8c8f94; }
+.ovebotai-wrap .ovebotai-dash-card-muted .ovebotai-dash-card-icon { color: #c3c4c7; }
+.ovebotai-wrap .ovebotai-dash-card-muted:hover { border-color: #dba617; color: #614200; }
+
+.ovebotai-wrap .ovebotai-dash-card-title { text-align: center; }
+
+/* ── Advanced-settings call-out (below the dashboard cards) ───────────────── */
+
+.ovebotai-wrap .ovebotai-advanced-panel {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 28px;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #eef2ff 0%, #f5f0ff 100%);
+    border: 1px solid #c7c0f5;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(97, 94, 214, 0.1);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.ovebotai-wrap .ovebotai-advanced-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(97, 94, 214, 0.2);
+    border-color: #a99ff0;
+}
+
+.ovebotai-wrap .ovebotai-advanced-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    background: #615ed6;
+    color: #fff;
+    font-size: 20px;
+}
+
+.ovebotai-wrap .ovebotai-advanced-body { display: flex; flex-direction: column; gap: 3px; flex: 1 1 auto; min-width: 0; }
+.ovebotai-wrap .ovebotai-advanced-title { font-size: 15px; font-weight: 700; color: #1d1b3f; line-height: 1.3; }
+.ovebotai-wrap .ovebotai-advanced-desc { font-size: 13px; color: #4b4870; line-height: 1.45; }
+
+.ovebotai-wrap .ovebotai-advanced-cta {
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4f46c9;
+    white-space: nowrap;
+}
+
+.ovebotai-wrap .ovebotai-advanced-panel:hover .ovebotai-advanced-cta { color: #3a33a0; }
+
+@media (max-width: 600px) {
+    .ovebotai-wrap .ovebotai-advanced-panel { flex-wrap: wrap; }
+    .ovebotai-wrap .ovebotai-advanced-cta { flex-basis: 100%; padding-left: 56px; }
+}
+
+/* ── Settings header / connection badge ──────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 20px 0 24px;
+}
+
+.ovebotai-wrap .ovebotai-settings-header h1,
+.ovebotai-wrap .ovebotai-settings-header .ovebotai-logo h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.ovebotai-wrap .ovebotai-connection-badge {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+    color: #50575e;
+    background: #edfaef;
+    border: 1px solid #b8e6c1;
+    border-radius: 20px;
+    padding: 5px 14px;
+}
+
+.ovebotai-wrap .ovebotai-connection-badge.is-disconnected { background: #fff8e5; border-color: #f0dca0; }
+
+.ovebotai-wrap .ovebotai-status-dot { width: 8px; height: 8px; border-radius: 50%; background: #c3c4c7; flex-shrink: 0; }
+.ovebotai-wrap .ovebotai-status-dot.is-connected { background: #00a32a; }
+.ovebotai-wrap .ovebotai-status-dot.is-disconnected { background: #dba617; }
+
+.ovebotai-wrap .ovebotai-disconnect-link { color: #d63638; }
+.ovebotai-wrap .ovebotai-disconnect-link:hover { color: #b32d2e; text-decoration: underline; }
+
+.ovebotai-wrap .ovebotai-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2271b1;
+    background: #f0f6fc;
+    border: 1px solid #c8dff5;
+    border-radius: 4px;
+    padding: 4px 10px;
+}
+
+.ovebotai-wrap .ovebotai-back-link:hover { color: #fff; background: #2271b1; border-color: #2271b1; }
+.ovebotai-wrap .ovebotai-back-link .ovebotai-icon { font-size: 14px; }
+
+/* ── Products indexed (wide card) ────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-dash-card-wide {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    margin: 0 0 28px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+}
+
+.ovebotai-wrap .ovebotai-dash-card-wide-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.ovebotai-wrap .ovebotai-dash-card-wide-label .ovebotai-icon { font-size: 18px; color: #2271b1; }
+
+.ovebotai-wrap .ovebotai-dash-card-wide-count {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    text-align: right;
+}
+
+.ovebotai-wrap a.ovebotai-dash-card-wide-count:hover { text-decoration: underline; }
+
+.ovebotai-wrap .ovebotai-dash-card-wide-count.is-positive { color: #00a32a; }
+.ovebotai-wrap .ovebotai-dash-card-wide-count.is-zero { color: #8c8f94; }
+
+/* ── Fieldset (Knowledge Bases panel) ────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-fieldset {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.ovebotai-wrap .ovebotai-fieldset-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #1d2327;
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f0f1;
+    background: #f6f7f7;
+    border-radius: 4px 4px 0 0;
+}
+
+.ovebotai-wrap .ovebotai-fieldset-legend .ovebotai-icon { font-size: 18px; color: #2271b1; }
+
+.ovebotai-wrap .ovebotai-fieldset .description.ovebotai-fieldset-intro { margin-top: 0; margin-bottom: 15px; font-size: 13px; }
+
+.ovebotai-wrap .ovebotai-fieldset-body { padding: 16px 20px; }
+
+/* ── Knowledge base list (reuses .ovebotai-pages-list, flattened) ────────── */
+
+.ovebotai-wrap .ovebotai-kb-list {
+    border: none;
+    border-radius: 0;
+    background: none;
+    padding: 0;
+    max-height: none;
+    overflow-y: visible;
+    gap: 0;
+}
+
+.ovebotai-wrap .ovebotai-kb-list .ovebotai-page-item {
+    justify-content: space-between;
+    cursor: default;
+    border: 0;
+    border-bottom: 1px solid #f0f0f1;
+    border-radius: 0;
+    padding: 10px 4px;
+}
+
+.ovebotai-wrap .ovebotai-kb-list .ovebotai-page-item:last-child { border-bottom: 0; padding-bottom: 4px; }
+
+.ovebotai-wrap .ovebotai-kb-list .ovebotai-page-item:hover {
+    background: none;
+    border-color: transparent;
+    border-bottom-color: #f0f0f1;
+}
+
+.ovebotai-wrap .ovebotai-kb-list .ovebotai-page-item:hover .ovebotai-page-title { color: #1d2327; }
+
+.ovebotai-wrap .ovebotai-kb-summary { margin-top: -6px; margin-bottom: 12px; }
+
+.ovebotai-wrap .ovebotai-kb-item-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.ovebotai-wrap .ovebotai-page-url {
+    font-size: 11px;
+    color: #787c82;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.ovebotai-wrap .ovebotai-page-url:hover { color: #2271b1; text-decoration: underline; }
+
+.ovebotai-wrap .ovebotai-ext-icon { font-size: 13px; opacity: 0.6; }
+
+/* ── Status badges (Active / Inactive) ───────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-status-badge {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: 10px;
+    padding: 1px 8px;
+    cursor: default;
+}
+
+.ovebotai-wrap .ovebotai-status-badge.is-active { color: #1a6a26; background: #edfaef; border: 1px solid #b8e6c1; }
+.ovebotai-wrap .ovebotai-status-badge.is-inactive { color: #614200; background: #fff8e5; border: 1px solid #dba617; }
+
+/* ── Settings: base form-field styles ────────────────────────────────────── */
+
+.ovebotai-wrap input.regular-text,
+.ovebotai-wrap select {
+    padding: 5px 8px;
+    font-size: 13px;
+    border: 1px solid #8c8f94;
+    border-radius: 3px;
+    background-color: #fff;
+    color: #2c3338;
+}
+
+.ovebotai-wrap input.small-text {
+    width: 70px;
+    padding: 5px 8px;
+    font-size: 13px;
+    border: 1px solid #8c8f94;
+    border-radius: 3px;
+    background: #fff;
+    color: #2c3338;
+}
+
+.ovebotai-wrap .description { margin: 6px 0 0; font-size: 12px; color: #787c82; }
+
+.ovebotai-wrap .ovebotai-field { margin-bottom: 16px; }
+.ovebotai-wrap .ovebotai-field:last-child { margin-bottom: 0; }
+.ovebotai-wrap .ovebotai-field > input.regular-text { width: 100%; }
+
+.ovebotai-wrap .ovebotai-field > label {
+    display: block;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #50575e;
+    margin-bottom: 6px;
+}
+
+/* Top row: label on the left, switch on the right; the description wraps onto its own line underneath. */
+.ovebotai-wrap .ovebotai-field-switch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 16px;
+}
+
+.ovebotai-wrap .ovebotai-field-switch > label { margin-bottom: 0; }
+.ovebotai-wrap .ovebotai-field-switch > .description { flex-basis: 100%; margin-top: 0; }
+
+/* ── Toggle switch ───────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-switch-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.ovebotai-wrap .ovebotai-switch-wrap .ovebotai-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+.ovebotai-wrap .ovebotai-switch input { opacity: 0; width: 0; height: 0; }
+
+.ovebotai-wrap .ovebotai-switch-slider {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: #c3c4c7;
+    border-radius: 22px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ovebotai-wrap .ovebotai-switch-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+}
+
+.ovebotai-wrap .ovebotai-switch input:checked + .ovebotai-switch-slider { background: #2271b1; }
+.ovebotai-wrap .ovebotai-switch input:checked + .ovebotai-switch-slider::before { transform: translateX(18px); }
+.ovebotai-wrap .ovebotai-switch input:focus + .ovebotai-switch-slider { box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.35); }
+
+.ovebotai-wrap .ovebotai-switch-lbl { font-size: 13px; color: #50575e; min-width: 63px; }
+
+/* ── Appearance panel ────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-appearance-panel { margin-top: 16px; padding-top: 16px; border-top: 1px solid #f0f0f1; }
+
+.ovebotai-wrap .ovebotai-appearance-subhead {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #8c8f94;
+    margin: 20px 0 12px;
+}
+
+.ovebotai-wrap .ovebotai-appearance-subhead:first-child { margin-top: 0; }
+
+.ovebotai-wrap .ovebotai-appearance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
+.ovebotai-wrap .ovebotai-appearance-grid select { width: 100%; }
+
+@media (max-width: 600px) {
+    .ovebotai-wrap .ovebotai-appearance-grid { grid-template-columns: 1fr; }
+}
+
+.ovebotai-wrap .ovebotai-field-full { grid-column: 1 / -1; }
+
+.ovebotai-wrap .ovebotai-combo-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; }
+
+.ovebotai-wrap .ovebotai-combo-row select,
+.ovebotai-wrap .ovebotai-combo-row input.regular-text {
+    flex: 1 1 220px;
+    min-width: 0;
+    width: auto;
+}
+
+.ovebotai-wrap .ovebotai-combo-sub { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.ovebotai-wrap .ovebotai-combo-sub .small-text { width: 70px; }
+
+.ovebotai-wrap .ovebotai-combo-suffix { font-size: 12px; color: #787c82; white-space: nowrap; }
+
+.ovebotai-wrap .ovebotai-appearance-toggle { display: inline-flex; align-items: center; gap: 8px; }
+.ovebotai-wrap .ovebotai-appearance-toggle .ovebotai-icon { font-size: 16px; }
+
+/* ── Color input ─────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-color-wrap { display: flex; align-items: center; gap: 8px; }
+
+.ovebotai-wrap .ovebotai-color-wrap input[type="color"] {
+    width: 36px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+}
+
+/* ── URL row ─────────────────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-url-row { display: flex; align-items: center; gap: 6px; }
+
+.ovebotai-wrap .ovebotai-url-row .regular-text { flex: 1 1 auto; width: auto; min-width: 0; }
+
+.ovebotai-wrap .button.ovebotai-regen-hash-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    line-height: normal;
+}
+
+.ovebotai-wrap .ovebotai-regen-hash-btn .ovebotai-icon { font-size: 16px; }
+
+.ovebotai-wrap input.regular-text.ovebotai-readonly-url {
+    font-family: monospace;
+    font-size: 12px;
+    color: #50575e;
+    background-color: #f6f7f7;
+}
+
+/* ── Save notice (above the form) ─────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-save-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-top: 15px;
+    margin-bottom: 16px;
+    font-size: 13px;
+}
+
+.ovebotai-wrap .ovebotai-save-notice p { margin: 0; }
+
+/* ── Save row (sticky) ───────────────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-save-row {
+    position: sticky;
+    bottom: 0;
+    padding: 10px 20px;
+    background: #fff;
+    overflow: visible;
+}
+
+/* Unsaved-changes pulse: expanding rings around the Save button. */
+.ovebotai-wrap .ovebotai-save-btn.ovebotai-attn {
+    position: relative;
+    z-index: 1;
+    animation: oveSaveWave 1.8s ease-out infinite;
+}
+
+@keyframes oveSaveWave {
+    0% { box-shadow: 0 0 0 0 rgba(34, 113, 177, 0.55), 0 0 0 0 rgba(34, 113, 177, 0.35); }
+    50% { box-shadow: 0 0 0 10px rgba(34, 113, 177, 0), 0 0 0 0 rgba(34, 113, 177, 0.35); }
+    100% { box-shadow: 0 0 0 10px rgba(34, 113, 177, 0), 0 0 0 20px rgba(34, 113, 177, 0); }
+}
+
+.ovebotai-wrap .ovebotai-settings-form { margin-top: 15px; }
+
+/* Deep-link highlight (?highlight=<id>): a few rings around the field the link pointed at. */
+.ovebotai-wrap .ovebotai-highlight-pulse {
+    position: relative;
+    z-index: 1;
+    border-radius: 6px;
+    animation: oveHighlightPulse 1.4s ease-out 3;
+}
+
+@keyframes oveHighlightPulse {
+    0% { box-shadow: 0 0 0 0 rgba(34, 113, 177, 0.55); background-color: rgba(34, 113, 177, 0.08); }
+    70% { box-shadow: 0 0 0 14px rgba(34, 113, 177, 0); background-color: rgba(34, 113, 177, 0.08); }
+    100% { box-shadow: 0 0 0 14px rgba(34, 113, 177, 0); background-color: transparent; }
+}
+
+/* ── Step 2: per-page sync error + view link ─────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-page-row { position: relative; border-radius: 4px; }
+
+.ovebotai-wrap .ovebotai-page-error {
+    position: absolute;
+    top: 6px;
+    right: 12px;
+    font-size: 11px;
+    color: #d63638;
+    line-height: 1.3;
+    text-align: right;
+    max-width: 55%;
+    pointer-events: none;
+}
+
+.ovebotai-wrap .ovebotai-page-error.is-success { color: #00a32a; }
+
+.ovebotai-wrap .ovebotai-page-view-link { font-size: 11px; color: #787c82; }
+.ovebotai-wrap .ovebotai-page-view-link:hover { color: #2271b1; text-decoration: underline; }
+
+/* ── Step 3: products mode radios ─────────────────────────────────────────── */
+
+.ovebotai-wrap .ovebotai-products-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.ovebotai-wrap .ovebotai-radio-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    padding: 12px 14px;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    transition: background 0.15s, border-color 0.15s;
+    margin: 0;
+}
+
+.ovebotai-wrap .ovebotai-radio-item:hover { background: #f0f6fc; border-color: #c8dff5; }
+
+.ovebotai-wrap .ovebotai-radio-item input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.ovebotai-wrap .ovebotai-radio-mark {
+    flex-shrink: 0;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    margin-top: 1px;
+    border: 2px solid #8c8f94;
+    border-radius: 50%;
+    background: #fff;
+    position: relative;
+    transition: border-color 0.15s;
+}
+
+.ovebotai-wrap .ovebotai-radio-item input[type="radio"]:checked + .ovebotai-radio-mark { border-color: #2271b1; }
+
+.ovebotai-wrap .ovebotai-radio-item input[type="radio"]:checked + .ovebotai-radio-mark::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    bottom: 3px;
+    left: 3px;
+    border-radius: 50%;
+    background: #2271b1;
+}
+
+.ovebotai-wrap .ovebotai-radio-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ovebotai-wrap .ovebotai-radio-title { font-size: 14px; font-weight: 500; color: #1d2327; line-height: 1.3; }
+.ovebotai-wrap .ovebotai-radio-desc { font-size: 12px; color: #787c82; line-height: 1.4; word-break: break-word; }
+.ovebotai-wrap .ovebotai-radio-desc a { color: #2271b1; }
+
+/* Step 3: the "count is per variation" note right under the product count. */
+.ovebotai-wrap .ovebotai-products-note { margin: -12px 0 20px; font-size: 13px; line-height: 1.5; transition: opacity 0.15s ease; }
+.ovebotai-wrap .ovebotai-products-note.ovebotai-msg-dimmed { opacity: 0.5; }

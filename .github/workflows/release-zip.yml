@@ -1,0 +1,77 @@
+# Ovebot AI - AI Chatbot, Live Chat & AI Sales Agent
+# Copyright 2026 AWeb Design SRL, MIT License
+#
+# On a published GitHub release, builds the module zip and attaches it to the release.
+# The files sit in Ovebot/Chat/ inside the zip, so unzipping it into the app/code folder of Magento puts the
+# module in app/code/Ovebot/Chat. Files marked export-ignore in .gitattributes are left out, the unit tests among
+# them. The release tag must be the version of composer.json ("1.0.0" or "v1.0.0").
+# A Composer "artifact" or Marketplace package needs composer.json at the root of the zip instead: that zip is
+# built without --prefix.
+
+name: release-zip
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check the version
+        run: |
+          set -euo pipefail
+          VERSION="$(jq -r .version composer.json)"
+          TAG="${GITHUB_REF_NAME#v}"
+          if [ "${TAG}" != "${VERSION}" ]; then
+            echo "::error::The tag ${GITHUB_REF_NAME} is not the version of composer.json (${VERSION})"
+            exit 1
+          fi
+          if ! grep -q "^| Version | ${VERSION} |" README.md; then
+            echo "::error::README.md does not show version ${VERSION}"
+            exit 1
+          fi
+          if ! grep -q "^## \[${VERSION}\] - [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no dated section for ${VERSION}"
+            exit 1
+          fi
+          echo "VERSION=${VERSION}" >> "${GITHUB_ENV}"
+
+      - name: Build the zip
+        run: |
+          set -euo pipefail
+          ZIP="ovebot-module-chat-${VERSION}.zip"
+          DIR="Ovebot/Chat"
+          git archive --format=zip --prefix="${DIR}/" --output="${ZIP}" HEAD
+          LIST="$(unzip -Z1 "${ZIP}")"
+          for FILE in composer.json registration.php etc/module.xml LICENSE.txt; do
+            if ! grep -qx "${DIR}/${FILE}" <<< "${LIST}"; then
+              echo "::error::${DIR}/${FILE} is missing from the zip"
+              exit 1
+            fi
+          done
+          if grep -qv "^Ovebot/" <<< "${LIST}"; then
+            echo "::error::The zip holds files outside ${DIR}/"
+            exit 1
+          fi
+          if grep -q "^${DIR}/\.git" <<< "${LIST}"; then
+            echo "::error::The zip holds Git files"
+            exit 1
+          fi
+          if grep -q "^${DIR}/Test/" <<< "${LIST}"; then
+            echo "::error::The zip holds the unit tests"
+            exit 1
+          fi
+          echo "ZIP=${ZIP}" >> "${GITHUB_ENV}"
+
+      # GitHub CLI, preinstalled on the runner: no third-party action, no Node.js runtime to keep up with
+      - name: Attach the zip to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "${GITHUB_REF_NAME}" "${ZIP}" --clobber
