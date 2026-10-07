@@ -67,10 +67,12 @@ class Purchase implements ArgumentInterface
     public function getPurchasesJson(): string
     {
         try {
-            if (!$this->options->isActive($this->connections->get())) {
+            $connection = $this->connections->get();
+            if (!$this->options->isActive($connection)) {
                 return '';
             }
             $purchases = $this->purchases->getPurchases();
+            $agent = $connection->getAgent();
         } catch (\Exception $e) {
             // the success page must never break because of the chat
             $this->logger->warning('Purchase event left out (' . get_class($e) . ').');
@@ -80,6 +82,15 @@ class Purchase implements ArgumentInterface
 
         if (!$purchases) {
             return '';
+        }
+
+        // The agent the conversion belongs to, named explicitly as the tracking docs ask (event.js would
+        // otherwise fall back to the agent of the "chat" call, or to the default agent). Same rule as the chat
+        // options: the default agent has no public id and is not named.
+        if ($agent !== '' && $agent !== 'default') {
+            foreach ($purchases as $i => $purchase) {
+                $purchases[$i] = array_merge(['agent' => $agent] + $purchase);
+            }
         }
 
         return (string) json_encode(

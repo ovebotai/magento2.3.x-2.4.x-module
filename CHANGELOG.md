@@ -4,6 +4,13 @@ All notable changes to this module are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- Purchase event: the connected agent is named explicitly (`agent`) in each purchase, as the Ovebot.ai tracking
+  snippet documents, instead of relying on event.js reading it off the "chat" call.
+
 ## [1.1.0] - 2026-10-06
 
 ### Added

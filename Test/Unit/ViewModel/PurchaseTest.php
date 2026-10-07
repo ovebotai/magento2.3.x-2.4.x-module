@@ -35,17 +35,28 @@ class PurchaseTest extends TestCase
      */
     private $asked = 0;
 
+    /**
+     * @var string
+     */
+    private $agent = '';
+
     protected function setUp(): void
     {
         $this->active = true;
         $this->purchases = [['transaction_id' => 41, 'total' => 199.9, 'currency' => 'RON']];
         $this->asked = 0;
+        $this->agent = '';
     }
 
     private function viewModel(): Purchase
     {
+        $connection = $this->createMock(Connection::class);
+        $connection->method('getAgent')->willReturnCallback(function () {
+            return $this->agent;
+        });
+
         $connections = $this->createMock(ConnectionRepository::class);
-        $connections->method('get')->willReturn($this->createMock(Connection::class));
+        $connections->method('get')->willReturn($connection);
 
         $options = $this->createMock(OptionsBuilder::class);
         $options->method('isActive')->willReturnCallback(function () {
@@ -67,6 +78,26 @@ class PurchaseTest extends TestCase
 
     public function testPurchasesAsJson()
     {
+        $this->assertSame(
+            '[{"transaction_id":41,"total":199.9,"currency":"RON"}]',
+            $this->viewModel()->getPurchasesJson()
+        );
+    }
+
+    public function testNamesTheAgent()
+    {
+        $this->agent = 'eHAjWWvAVai6SeAA';
+
+        $this->assertSame(
+            '[{"agent":"eHAjWWvAVai6SeAA","transaction_id":41,"total":199.9,"currency":"RON"}]',
+            $this->viewModel()->getPurchasesJson()
+        );
+    }
+
+    public function testTheDefaultAgentIsNotNamed()
+    {
+        $this->agent = 'default';
+
         $this->assertSame(
             '[{"transaction_id":41,"total":199.9,"currency":"RON"}]',
             $this->viewModel()->getPurchasesJson()
