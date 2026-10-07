@@ -18,7 +18,7 @@ use Ovebot\Chat\Model\Widget\Settings as WidgetSettings;
 use Psr\Log\LoggerInterface;
 
 /**
- * Settings page, "Save settings": the chat switch, the three switches mirrored by the account, the appearance.
+ * Settings page, "Save settings": the chat switch, the four switches mirrored by the account, the appearance.
  */
 class SaveSettings extends AbstractAjax
 {
@@ -70,7 +70,8 @@ class SaveSettings extends AbstractAjax
             $this->widgetSettings->sanitize($raw),
             (bool) $request->getParam('products_builtin'),
             (bool) $request->getParam('products_recommend'),
-            (bool) $request->getParam('order_enabled')
+            (bool) $request->getParam('order_enabled'),
+            (bool) $request->getParam('add_to_cart')
         );
 
         switch ($result['status']) {

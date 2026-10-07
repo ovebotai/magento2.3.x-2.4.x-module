@@ -23,11 +23,6 @@ class ItemMapper
     private $text;
 
     /**
-     * @var array references given out in the feed that is being built
-     */
-    private $seen = [];
-
-    /**
      * @param Text $text
      */
     public function __construct(Text $text)
@@ -36,24 +31,18 @@ class ItemMapper
     }
 
     /**
-     * Forget the references given out; called when a feed starts
-     *
-     * @return void
-     */
-    public function reset()
-    {
-        $this->seen = [];
-    }
-
-    /**
      * Build an item
      *
      * For a variant, "options" holds what it is chosen by: the values are added to the name and to the
      * attributes, and the URL gets the fragment the product page reads to select the variant.
      *
-     * @param array $data id, sku, name, description, short_description, category, manufacturer, availability,
-     *                    quantity, price, special, currency, image, url, attributes {label: value},
-     *                    options [{attribute_id, label, value_id, value}]
+     * The reference is the id of the product, "{id}", for a variant "{parent id}-{child id}": what the
+     * add-to-cart of the storefront takes. The SKU, the GTIN and the other images are columns of their own, present
+     * only when the product has them.
+     *
+     * @param array $data id, sku, gtin, name, description, short_description, category, manufacturer,
+     *                    availability, quantity, price, special, currency, image, additional_image_link [url],
+     *                    url, attributes {label: value}, options [{attribute_id, label, value_id, value}]
      * @return array
      */
     public function map(array $data): array
@@ -88,8 +77,8 @@ class ItemMapper
         $price = isset($data['price']) ? (float) $data['price'] : 0.0;
         $special = isset($data['special']) ? (float) $data['special'] : 0.0;
 
-        return [
-            'ref' => $this->ref($this->string($data, 'sku'), $this->string($data, 'id')),
+        $item = [
+            'ref' => $this->string($data, 'id'),
             'name' => $name,
             'description' => $description,
             'category' => $category !== '' ? $category : null,
@@ -104,32 +93,23 @@ class ItemMapper
             // an object also when empty: the feed always has {} here, never []
             'attributes' => (object) $attributes,
         ];
-    }
 
-    /**
-     * Reference of an item: the SKU, exactly as it is stored
-     *
-     * The id is the fallback for broken data only, an empty SKU or one that was already given out: the
-     * reference may neither be missing nor appear twice in a feed.
-     *
-     * @param string $sku
-     * @param string $fallback "{id}", for a variant "{parent id}-{child id}"
-     * @return string
-     */
-    private function ref(string $sku, string $fallback): string
-    {
-        if ($sku === '' || isset($this->seen[$sku])) {
-            while (isset($this->seen[$fallback])) {
-                // a SKU made of digits may be the id of another product
-                $fallback = 'id-' . $fallback;
-            }
-            $this->seen[$fallback] = true;
-
-            return $fallback;
+        $sku = $this->string($data, 'sku');
+        if ($sku !== '') {
+            $item['sku'] = $sku;
         }
-        $this->seen[$sku] = true;
+        $gtin = trim($this->string($data, 'gtin'));
+        if ($gtin !== '') {
+            $item['gtin'] = $gtin;
+        }
+        $images = isset($data['additional_image_link']) && is_array($data['additional_image_link'])
+            ? array_values(array_filter($data['additional_image_link'], 'is_string'))
+            : [];
+        if ($images) {
+            $item['additional_image_link'] = $images;
+        }
 
-        return $sku;
+        return $item;
     }
 
     /**

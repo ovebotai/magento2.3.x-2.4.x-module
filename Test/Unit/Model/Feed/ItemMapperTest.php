@@ -34,6 +34,8 @@ class ItemMapperTest extends TestCase
             'image' => 'https://shop.test/media/catalog/product/t/r/tricou.jpg',
             'url' => 'https://shop.test/tricou-bumbac.html',
             'attributes' => ['Material' => 'Bumbac'],
+            'gtin' => '',
+            'additional_image_link' => [],
             'options' => [],
         ];
     }
@@ -45,11 +47,12 @@ class ItemMapperTest extends TestCase
         $this->assertSame(
             [
                 'ref', 'name', 'description', 'category', 'manufacturer', 'availability', 'quantity', 'price',
-                'special', 'currency', 'image', 'url', 'attributes',
+                'special', 'currency', 'image', 'url', 'attributes', 'sku',
             ],
             array_keys($item)
         );
-        $this->assertSame('TRICOU-BBC', $item['ref']);
+        $this->assertSame('14', $item['ref']);
+        $this->assertSame('TRICOU-BBC', $item['sku']);
         $this->assertSame('Tricou bumbac', $item['name']);
         $this->assertSame("Tricou din bumbac.\nSe spală la 30°.", $item['description']);
         $this->assertSame('Îmbrăcăminte > Tricouri', $item['category']);
@@ -75,7 +78,8 @@ class ItemMapperTest extends TestCase
             ],
         ]));
 
-        $this->assertSame('TRICOU-BBC-ROSU-M', $item['ref']);
+        $this->assertSame('14-31', $item['ref']);
+        $this->assertSame('TRICOU-BBC-ROSU-M', $item['sku']);
         $this->assertSame('Tricou bumbac - Roșu, M', $item['name']);
         $this->assertSame('https://shop.test/tricou-bumbac.html#93=56&144=167', $item['url']);
         $this->assertSame(
@@ -84,39 +88,46 @@ class ItemMapperTest extends TestCase
         );
     }
 
-    public function testSkuIsSentExactlyAsStored()
+    public function testSkuIsSentExactlyAsStoredAndLeftOutWhenEmpty()
     {
-        $item = (new ItemMapper(new Text()))->map($this->data(['sku' => ' Ab-12 /x ']));
+        $mapper = new ItemMapper(new Text());
 
-        $this->assertSame(' Ab-12 /x ', $item['ref']);
+        $this->assertSame(' Ab-12 /x ', $mapper->map($this->data(['sku' => ' Ab-12 /x ']))['sku']);
+        $this->assertArrayNotHasKey('sku', $mapper->map($this->data(['sku' => ''])));
     }
 
-    public function testEmptyOrRepeatedSkuFallsBackToTheId()
+    public function testReferenceIsTheIdWhateverTheSku()
     {
         $mapper = new ItemMapper(new Text());
 
         $this->assertSame('14', $mapper->map($this->data(['sku' => '']))['ref']);
-        $this->assertSame('SKU-1', $mapper->map($this->data(['id' => '15', 'sku' => 'SKU-1']))['ref']);
+        $this->assertSame('15', $mapper->map($this->data(['id' => '15', 'sku' => 'SKU-1']))['ref']);
         $this->assertSame('16', $mapper->map($this->data(['id' => '16', 'sku' => 'SKU-1']))['ref']);
-        $this->assertSame('20-21', $mapper->map($this->data(['id' => '20-21', 'sku' => 'SKU-1']))['ref']);
+        $this->assertSame('20-21', $mapper->map($this->data(['id' => '20-21', 'sku' => '30']))['ref']);
     }
 
-    public function testReferenceIsNeverGivenTwice()
+    public function testGtinIsTrimmedAndLeftOutWhenEmpty()
     {
         $mapper = new ItemMapper(new Text());
 
-        // a SKU made of digits that is also the id of a product without SKU
-        $this->assertSame('30', $mapper->map($this->data(['id' => '7', 'sku' => '30']))['ref']);
-        $this->assertSame('id-30', $mapper->map($this->data(['id' => '30', 'sku' => '']))['ref']);
+        $this->assertSame('5901234123457', $mapper->map($this->data(['gtin' => ' 5901234123457 ']))['gtin']);
+        $this->assertArrayNotHasKey('gtin', $mapper->map($this->data(['gtin' => '  '])));
+        $this->assertArrayNotHasKey('gtin', $mapper->map($this->data(['gtin' => null])));
     }
 
-    public function testResetStartsANewFeed()
+    public function testAdditionalImagesKeepTheirOrderAndAreLeftOutWhenThereAreNone()
     {
         $mapper = new ItemMapper(new Text());
-        $mapper->map($this->data());
-        $mapper->reset();
+        $urls = ['https://shop.test/media/catalog/product/t/r/tricou-2.jpg', 'https://shop.test/media/t-3.jpg'];
 
-        $this->assertSame('TRICOU-BBC', $mapper->map($this->data())['ref']);
+        $item = $mapper->map($this->data(['gtin' => '123', 'additional_image_link' => $urls]));
+        $this->assertSame($urls, $item['additional_image_link']);
+        $this->assertSame(['attributes', 'sku', 'gtin', 'additional_image_link'], array_slice(array_keys($item), -4));
+
+        foreach ([[], 'x', [1]] as $none) {
+            $item = $mapper->map($this->data(['additional_image_link' => $none]));
+            $this->assertArrayNotHasKey('additional_image_link', $item);
+        }
     }
 
     public function testShortDescriptionIsUsedWhenTheLongOneHasNoText()

@@ -98,6 +98,26 @@ $switchLabel = function (bool $enabled): string {
                 </div>
 
                 <div class="ovebotai-field ovebotai-field-switch">
+                    <label for="oveAddToCart"><?= $escaper->escapeHtml(__('Add to cart button')) ?></label>
+                    <div class="ovebotai-switch-wrap">
+                        <label class="ovebotai-switch">
+                            <input type="checkbox" name="add_to_cart" id="oveAddToCart" value="1"
+                                <?php if ($settings->isAddToCart()): ?>checked="checked"<?php endif; ?>>
+                            <span class="ovebotai-switch-slider"></span>
+                        </label>
+                        <span class="ovebotai-switch-lbl" id="oveAddToCartLbl"><?=
+                            $escaper->escapeHtml($switchLabel($settings->isAddToCart())) ?></span>
+                    </div>
+                    <p class="description">
+                        <?= $escaper->escapeHtml(__(
+                            'When enabled, recommended products get an "Add to cart" button in the chat and '
+                            . 'the chat shows the visitor\'s cart. The option must also be enabled in your '
+                            . 'Ovebot.ai account.'
+                        )) ?>
+                    </p>
+                </div>
+
+                <div class="ovebotai-field ovebotai-field-switch">
                     <label for="oveProductsBuiltin">
                         <?= $escaper->escapeHtml(__('Use the built-in product feed')) ?>
                     </label>

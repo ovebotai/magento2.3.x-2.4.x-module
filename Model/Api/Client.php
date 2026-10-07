@@ -191,16 +191,12 @@ class Client
     /**
      * URL of the registration page ("Start Free")
      *
-     * @param string $plan
      * @param string $domain
      * @return string
      */
-    public function buildRegisterUrl(string $plan, string $domain): string
+    public function buildRegisterUrl(string $domain): string
     {
-        return 'https://' . $this->accountHost . '/register?' . http_build_query([
-            'plan' => $plan,
-            'domain' => $domain,
-        ]);
+        return 'https://' . $this->accountHost . '/register?' . http_build_query(['domain' => $domain]);
     }
 
     /**

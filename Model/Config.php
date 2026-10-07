@@ -24,8 +24,14 @@ class Config
     public const XML_PATH_TRACKING_URLS = 'ovebot_chat/tracking/urls';
     public const XML_PATH_ACCOUNT_HOST = 'ovebot_chat/developer/account_host';
     public const XML_PATH_API_HOST = 'ovebot_chat/developer/api_host';
+    public const XML_PATH_GTIN_ATTRIBUTE = 'ovebot_chat/feed/gtin_attribute';
 
     public const DEFAULT_MAX_AGE_DAYS = 60;
+
+    /**
+     * Value of the GTIN setting that stands for "look for a known attribute"
+     */
+    public const GTIN_AUTO = 'auto';
 
     /**
      * @var ScopeConfigInterface
@@ -119,6 +125,16 @@ class Config
     public function getApiHost(): string
     {
         return trim($this->value(self::XML_PATH_API_HOST));
+    }
+
+    /**
+     * Product attribute the feed sends as "gtin": an attribute code, GTIN_AUTO, or empty for no GTIN column
+     *
+     * @return string
+     */
+    public function getGtinAttribute(): string
+    {
+        return trim($this->value(self::XML_PATH_GTIN_ATTRIBUTE));
     }
 
     /**

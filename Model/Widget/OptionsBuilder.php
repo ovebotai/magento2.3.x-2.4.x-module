@@ -93,6 +93,23 @@ class OptionsBuilder
             return '';
         }
 
-        return (string) json_encode([$this->getLoaderBase($connection), $this->build($connection)]);
+        return (string) json_encode([
+            $this->getLoaderBase($connection),
+            $this->build($connection),
+            $this->isCartEnabled($connection),
+        ]);
+    }
+
+    /**
+     * Whether the storefront offers the "Add to cart" button and the cart to the chat
+     *
+     * The widget is shown and the "Add to cart" switch is on.
+     *
+     * @param Connection $connection
+     * @return bool
+     */
+    public function isCartEnabled(Connection $connection): bool
+    {
+        return $this->isActive($connection) && $connection->isAddToCart();
     }
 }

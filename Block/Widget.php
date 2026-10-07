@@ -95,15 +95,50 @@ class Widget extends Template implements IdentityInterface
             return '{}';
         }
 
+        $config = [
+            'base' => $this->options->getLoaderBase($connection),
+            'chat' => (object) $this->options->build($connection),
+            // the store view of the page: the check is a request to the same site
+            'previewUrl' => $this->getUrl(StoreView::ROUTE_PREVIEW_VALIDATE, ['_nosid' => true]),
+        ];
+        if ($this->isCartEnabled()) {
+            // "Add to cart" from the chat and the cart of the visitor (cart.js). The page is the same for every
+            // visitor (full page cache), so the cart itself is asked for by the scripts, never written here.
+            $config['cart'] = [
+                'add' => 'ovebotaiAddToCart',
+                'url' => $this->getUrl(StoreView::ROUTE_CART, ['_nosid' => true]),
+                'addUrl' => $this->getUrl('checkout/cart/add', ['_nosid' => true]),
+                'cartUrl' => $this->getUrl('checkout/cart', ['_nosid' => true]),
+                'checkoutUrl' => $this->getUrl('checkout', ['_nosid' => true]),
+            ];
+        }
+
         return (string) json_encode(
-            [
-                'base' => $this->options->getLoaderBase($connection),
-                'chat' => (object) $this->options->build($connection),
-                // the store view of the page: the check is a request to the same site
-                'previewUrl' => $this->getUrl(StoreView::ROUTE_PREVIEW_VALIDATE, ['_nosid' => true]),
-            ],
+            $config,
             JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES
         );
+    }
+
+    /**
+     * Whether the chat gets the "Add to cart" button and the cart: the widget is on and so is the switch
+     *
+     * @return bool
+     */
+    public function isCartEnabled(): bool
+    {
+        $connection = $this->connection();
+
+        return $connection !== null && $this->options->isCartEnabled($connection);
+    }
+
+    /**
+     * URL of cart.js, the add-to-cart function and the cart sync; loaded only while the switch is on
+     *
+     * @return string
+     */
+    public function getCartScriptUrl(): string
+    {
+        return $this->getViewFileUrl('Ovebot_Chat::js/cart.js');
     }
 
     /**

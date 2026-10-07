@@ -32,6 +32,8 @@
                 comment="Product recommendations (null = on)"/>
         <column xsi:type="smallint" name="order_enabled" unsigned="true" nullable="true" identity="false"
                 comment="Order tracking (null = on)"/>
+        <column xsi:type="smallint" name="add_to_cart" unsigned="true" nullable="true" identity="false"
+                comment="Add to cart button in the chat (null = on)"/>
         <column xsi:type="text" name="widget" nullable="true" comment="Widget appearance (JSON)"/>
         <column xsi:type="text" name="kb_page_ids" nullable="true" comment="Selected CMS page ids (JSON)"/>
         <column xsi:type="varchar" name="feed_hash" length="64" nullable="true" comment="Feed URL hash"/>

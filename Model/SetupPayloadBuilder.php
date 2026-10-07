@@ -18,7 +18,7 @@ use Ovebot\Chat\Model\StoreContext\StoreView;
  * The overrides swap values in WITHOUT storing them first, so a refused write keeps the old configuration, which
  * still works: a new feed hash, new credentials or a changed switch are stored only once Ovebot.ai accepted them.
  *
- * Override keys: products_recommend, products_builtin, order_enabled (bool), feed_hash, order_user,
+ * Override keys: products_recommend, products_builtin, order_enabled, add_to_cart (bool), feed_hash, order_user,
  * order_pass (string).
  */
 class SetupPayloadBuilder
@@ -44,7 +44,12 @@ class SetupPayloadBuilder
         // account import the feed again and switch the recommendations back ON, so the URL and the currency go
         // out only while the recommendations are on AND the built-in feed is the source. With a feed of the
         // merchant only "enabled" is sent, and the account keeps the merchant's feed URL.
-        $products = ['enabled' => $recommend];
+        $products = [
+            'enabled' => $recommend,
+            // mirrors the "Add to cart" switch of the shop and is always sent: the storefront defines the
+            // add-to-cart function only while it is on
+            'add_to_cart' => $this->flag($overrides, 'add_to_cart', $connection->isAddToCart()),
+        ];
         if ($recommend && $builtin) {
             $products['feed_url'] = $storeView->getFeedUrl(
                 $this->text($overrides, 'feed_hash', $connection->getFeedHash())

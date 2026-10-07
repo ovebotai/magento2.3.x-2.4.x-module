@@ -21,17 +21,18 @@ class SetupPayloadBuilderTest extends TestCase
     private const ORDERS_URL = 'https://www.shop-test.ro/ovebot/orders/index/';
 
     /**
-     * @param array $stored recommend, builtin, orders, widget
+     * @param array $stored recommend, builtin, orders, cart, widget
      * @return Connection
      */
     private function connection(array $stored = []): Connection
     {
-        $stored += ['recommend' => true, 'builtin' => true, 'orders' => true, 'widget' => []];
+        $stored += ['recommend' => true, 'builtin' => true, 'orders' => true, 'cart' => true, 'widget' => []];
 
         $connection = $this->createMock(Connection::class);
         $connection->method('isProductsRecommend')->willReturn($stored['recommend']);
         $connection->method('isProductsBuiltin')->willReturn($stored['builtin']);
         $connection->method('isOrderEnabled')->willReturn($stored['orders']);
+        $connection->method('isAddToCart')->willReturn($stored['cart']);
         $connection->method('getWidget')->willReturn($stored['widget']);
         $connection->method('getFeedHash')->willReturn(self::FEED_HASH);
         $connection->method('getOrderUser')->willReturn('shop_test_ro_deadbeef');
@@ -71,6 +72,7 @@ class SetupPayloadBuilderTest extends TestCase
                 ],
                 'products' => [
                     'enabled' => true,
+                    'add_to_cart' => true,
                     'feed_url' => 'https://www.shop-test.ro/ovebot/feed/index/?hash=' . self::FEED_HASH,
                     'currency' => 'RON',
                 ],
@@ -94,6 +96,21 @@ class SetupPayloadBuilderTest extends TestCase
         $this->assertSame($recommend, $products['enabled']);
         $this->assertSame($withFeed, array_key_exists('feed_url', $products));
         $this->assertSame($withFeed, array_key_exists('currency', $products));
+    }
+
+    /**
+     * The "Add to cart" switch is always sent, whatever the other switches say; an override wins
+     */
+    public function testAddToCartIsAlwaysSent()
+    {
+        $this->assertFalse($this->build(['cart' => false])['products']['add_to_cart']);
+        $this->assertFalse($this->build(['cart' => false, 'recommend' => false])['products']['add_to_cart']);
+        $this->assertTrue($this->build(['cart' => false], ['add_to_cart' => true])['products']['add_to_cart']);
+        $this->assertFalse($this->build(['cart' => true], ['add_to_cart' => false])['products']['add_to_cart']);
+        $this->assertSame(
+            ['enabled', 'add_to_cart', 'feed_url', 'currency'],
+            array_keys($this->build()['products'])
+        );
     }
 
     public static function productSwitches(): array

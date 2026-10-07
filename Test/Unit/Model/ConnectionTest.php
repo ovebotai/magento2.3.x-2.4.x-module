@@ -138,11 +138,13 @@ class ConnectionTest extends TestCase
             'products_builtin' => $stored,
             'products_recommend' => $stored,
             'order_enabled' => $stored,
+            'add_to_cart' => $stored,
         ]);
 
         $this->assertSame($expected, $connection->isProductsBuiltin());
         $this->assertSame($expected, $connection->isProductsRecommend());
         $this->assertSame($expected, $connection->isOrderEnabled());
+        $this->assertSame($expected, $connection->isAddToCart());
     }
 
     public static function switches(): array
@@ -167,6 +169,12 @@ class ConnectionTest extends TestCase
         $connection->setProductsBuiltin(null);
         $this->assertNull($connection->getData('products_builtin'));
         $this->assertTrue($connection->isProductsBuiltin());
+
+        $connection->setAddToCart(false);
+        $this->assertSame(0, $connection->getData('add_to_cart'));
+        $this->assertFalse($connection->isAddToCart());
+        $connection->setAddToCart(null);
+        $this->assertTrue($connection->isAddToCart());
 
         // chat and setup are plain flags: not set means off
         $this->assertFalse($connection->isChatEnabled());

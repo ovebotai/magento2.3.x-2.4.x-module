@@ -92,4 +92,11 @@ class ConfigTest extends TestCase
         $this->assertSame('account.staging.test', $config->getAccountHost());
         $this->assertSame('', $config->getApiHost());
     }
+
+    public function testGtinAttribute()
+    {
+        $this->assertSame('', $this->config([])->getGtinAttribute());
+        $this->assertSame('auto', $this->config([Config::XML_PATH_GTIN_ATTRIBUTE => 'auto'])->getGtinAttribute());
+        $this->assertSame('ean', $this->config([Config::XML_PATH_GTIN_ATTRIBUTE => ' ean '])->getGtinAttribute());
+    }
 }

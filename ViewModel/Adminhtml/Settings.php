@@ -126,6 +126,16 @@ class Settings implements ArgumentInterface
     }
 
     /**
+     * Whether the chat offers an "Add to cart" button and sees the cart
+     *
+     * @return bool
+     */
+    public function isAddToCart(): bool
+    {
+        return $this->integration()->getConnection()->isAddToCart();
+    }
+
+    /**
      * Whether the built-in feed is the product source
      *
      * @return bool

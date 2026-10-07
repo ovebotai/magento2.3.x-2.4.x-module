@@ -15,6 +15,7 @@ use Magento\Framework\Event;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Ovebot\Chat\Model\Storefront\PurchaseProvider;
 use Ovebot\Chat\Observer\CheckoutSuccessAction;
@@ -24,7 +25,8 @@ use Psr\Log\LoggerInterface;
 class PurchaseProviderTest extends TestCase
 {
     /**
-     * @var array order id => [grand total, currency]
+     * @var array order id => [grand total, currency, lines]; a line is
+     *            [item id, parent item id, product id, type, name, price with tax, qty]
      */
     private $orders = [];
 
@@ -46,9 +48,15 @@ class PurchaseProviderTest extends TestCase
     protected function setUp(): void
     {
         $this->orders = [
-            41 => ['199.9', 'RON'],
-            42 => ['10.004', 'EUR'],
-            43 => ['0.5', 'RON'],
+            41 => ['199.9', 'RON', [
+                [7, null, '1042', 'simple', 'Wireless Headphones Pro', '199.9', '1.0000'],
+            ]],
+            42 => ['10.004', 'EUR', [
+                // a configurable product: the parent line carries the price, the child line the variant
+                [8, null, '14', 'configurable', 'Tricou bumbac', '5.002', '2.0000'],
+                [9, 8, '31', 'simple', 'Tricou bumbac-Roșu-M', '0', '2.0000'],
+            ]],
+            43 => ['0.5', 'RON', []],
         ];
         $this->session = [];
         $this->loaded = [];
@@ -70,6 +78,7 @@ class PurchaseProviderTest extends TestCase
             $order->method('getEntityId')->willReturn((string) $id);
             $order->method('getGrandTotal')->willReturn($this->orders[$id][0]);
             $order->method('getOrderCurrencyCode')->willReturn($this->orders[$id][1]);
+            $order->method('getItems')->willReturn(array_map([$this, 'line'], $this->orders[$id][2]));
 
             return $order;
         });
@@ -97,6 +106,24 @@ class PurchaseProviderTest extends TestCase
         return new PurchaseProvider($repository, $session, $logger);
     }
 
+    /**
+     * @param array $data item id, parent item id, product id, type, name, price with tax, qty
+     * @return OrderItemInterface
+     */
+    private function line(array $data): OrderItemInterface
+    {
+        $item = $this->createMock(OrderItemInterface::class);
+        $item->method('getItemId')->willReturn($data[0]);
+        $item->method('getParentItemId')->willReturn($data[1]);
+        $item->method('getProductId')->willReturn($data[2]);
+        $item->method('getProductType')->willReturn($data[3]);
+        $item->method('getName')->willReturn($data[4]);
+        $item->method('getPriceInclTax')->willReturn($data[5]);
+        $item->method('getQtyOrdered')->willReturn($data[6]);
+
+        return $item;
+    }
+
     public function testNothingWithoutOrders()
     {
         $this->assertSame([], $this->provider()->getPurchases());
@@ -111,8 +138,28 @@ class PurchaseProviderTest extends TestCase
 
         $this->assertSame(
             [
-                ['transaction_id' => 41, 'total' => 199.9, 'currency' => 'RON'],
-                ['transaction_id' => 42, 'total' => 10.0, 'currency' => 'EUR'],
+                [
+                    'transaction_id' => 41,
+                    'total' => 199.9,
+                    'currency' => 'RON',
+                    'items' => [
+                        [
+                            'item_id' => '1042',
+                            'item_name' => 'Wireless Headphones Pro',
+                            'price' => 199.9,
+                            'quantity' => 1,
+                        ],
+                    ],
+                ],
+                [
+                    'transaction_id' => 42,
+                    'total' => 10.0,
+                    'currency' => 'EUR',
+                    // the variant is named as in the feed: parent id, child id; the child is not a line
+                    'items' => [
+                        ['item_id' => '14-31', 'item_name' => 'Tricou bumbac', 'price' => 5.0, 'quantity' => 2],
+                    ],
+                ],
             ],
             $provider->getPurchases()
         );

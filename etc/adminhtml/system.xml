@@ -42,6 +42,17 @@
                 </field>
             </group>
 
+            <group id="feed" translate="label" type="text" sortOrder="25"
+                   showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Product feed</label>
+                <field id="gtin_attribute" translate="label comment" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>GTIN attribute</label>
+                    <source_model>Ovebot\Chat\Model\Config\Source\GtinAttribute</source_model>
+                    <comment>The product attribute that holds the EAN/GTIN/UPC code, sent in the feed as "gtin". Auto-detect looks for an attribute named gtin, ean, ean13, upc, barcode or isbn.</comment>
+                </field>
+            </group>
+
             <group id="tracking" translate="label" type="text" sortOrder="30"
                    showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Shipment tracking</label>

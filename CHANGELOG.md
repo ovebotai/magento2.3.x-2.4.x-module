@@ -4,6 +4,28 @@ All notable changes to this module are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-10-06
+
+### Added
+
+- Product feed: `sku`, `gtin` and `additional_image_link` (the other images of the gallery, in their order), each
+  present only when the product has a value. The GTIN comes from the product attribute chosen under
+  **Stores > Configuration > Ovebot AI > Product feed > GTIN attribute**; *Auto-detect* (the default) takes the
+  first existing attribute named `gtin`, `ean`, `ean13`, `upc`, `barcode` or `isbn`.
+- Purchase event with the lines of the order (`items`: product id, name, unit price with taxes in the currency of
+  the order, quantity).
+- **Add to cart button** switch on the settings page, on by default and sent to the Ovebot.ai account as
+  `products.add_to_cart`. While it is on, the chat can add a product to the cart through the add-to-cart of the
+  theme (`window.ovebotaiAddToCart`, `cart.js`), gets the cart of the visitor with the page and after every
+  change of the cart, and offers the cart and checkout links. New storefront endpoint `POST ovebot/cart/index`
+  (`403` while the chat or the switch is off).
+
+### Changed
+
+- Product feed: `ref` is now the product id, for a variant `{parent id}-{child id}`, what the add-to-cart of the
+  storefront takes. The SKU moved to the `sku` column.
+- The **Start Free** link no longer carries a plan.
+
 ## [1.0.0] - 2026-09-30
 
 First release, for Magento Open Source and Adobe Commerce 2.3.0 to 2.4.8.

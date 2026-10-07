@@ -889,7 +889,7 @@ class IntegrationTest extends TestCase
 
     public function testRegisterUrl()
     {
-        $this->assertSame('register|wp-freemium|www.shop-test.ro', $this->integration()->getRegisterUrl());
+        $this->assertSame('register|www.shop-test.ro', $this->integration()->getRegisterUrl());
     }
 
     public function testKbPathsFollowTheAgent()
@@ -1002,6 +1002,7 @@ class IntegrationTest extends TestCase
                 ],
                 'products' => [
                     'enabled' => true,
+                    'add_to_cart' => true,
                     'feed_url' => 'https://www.shop-test.ro/ovebot/feed/index/?hash=' . str_repeat('a', 32),
                     'currency' => 'RON',
                 ],
@@ -1034,7 +1035,7 @@ class IntegrationTest extends TestCase
         $result = $this->integration()->resyncSetup(['products_builtin' => false, 'order_enabled' => false]);
 
         $this->assertTrue($result['success']);
-        $this->assertSame(['enabled' => true], $result['payload']['products']);
+        $this->assertSame(['enabled' => true, 'add_to_cart' => true], $result['payload']['products']);
         $this->assertFalse($result['payload']['order_info']['enabled']);
         $this->assertTrue($this->connection->isProductsBuiltin());
         $this->assertTrue($this->connection->isOrderEnabled());
@@ -1103,7 +1104,7 @@ class IntegrationTest extends TestCase
 
         $this->assertTrue($result['success']);
         $this->assertFalse($this->connection->isProductsBuiltin());
-        $this->assertSame(['enabled' => true], $this->calls[0]['body']['products']);
+        $this->assertSame(['enabled' => true, 'add_to_cart' => true], $this->calls[0]['body']['products']);
         $this->assertTrue($this->connection->isSetupComplete());
     }
 
@@ -1285,9 +1286,38 @@ class IntegrationTest extends TestCase
     public function testSwitchesNotSetCountAsOn()
     {
         $this->assertSame(
-            ['products_builtin' => true, 'products_recommend' => true, 'order_enabled' => true],
+            ['products_builtin' => true, 'products_recommend' => true, 'order_enabled' => true, 'add_to_cart' => true],
             $this->integration()->effectiveSwitches()
         );
+    }
+
+    public function testAddToCartIsSavedWithTheOtherSwitchesAndKeptWhenNotGiven()
+    {
+        $this->connect($this->connection)->setSetupComplete(true)->setChatEnabled(true);
+
+        $result = $this->integration()->saveSettings(true, $this->widget(), true, true, true, false);
+
+        $this->assertSame(Integration::SAVE_OK, $result['status']);
+        $this->assertFalse($this->calls[0]['body']['products']['add_to_cart']);
+        $this->assertFalse($result['effective']['add_to_cart']);
+        $this->assertSame('0', (string) $this->connection->getData('add_to_cart'));
+
+        // not given: the stored value goes out and stays
+        $this->integration()->saveSettings(true, $this->widget(), true, true, true);
+        $this->assertFalse($this->calls[1]['body']['products']['add_to_cart']);
+        $this->assertFalse($this->connection->isAddToCart());
+    }
+
+    public function testARefusedSaveKeepsTheAddToCartSwitch()
+    {
+        $this->connect($this->connection)->setSetupComplete(true)->setChatEnabled(true);
+        $this->responses['PUT /v1/workspaces/my-shop/agents/default/setup'] = new Response(422, ['message' => 'no']);
+
+        $result = $this->integration()->saveSettings(true, $this->widget(), true, true, true, false);
+
+        $this->assertSame(Integration::SAVE_SYNC_FAILED, $result['status']);
+        $this->assertTrue($this->connection->isAddToCart());
+        $this->assertTrue($result['effective']['add_to_cart']);
     }
 
     public function testSettingsAreSentAndThenStored()
@@ -1305,7 +1335,12 @@ class IntegrationTest extends TestCase
         $this->assertSame(Integration::SAVE_OK, $result['status']);
         $this->assertSame('', $result['error']);
         $this->assertSame(
-            ['products_builtin' => false, 'products_recommend' => true, 'order_enabled' => false],
+            [
+                'products_builtin' => false,
+                'products_recommend' => true,
+                'order_enabled' => false,
+                'add_to_cart' => true,
+            ],
             $result['effective']
         );
         $this->assertSame(['PUT /v1/workspaces/my-shop/agents/default/setup'], $this->keys());
@@ -1314,7 +1349,7 @@ class IntegrationTest extends TestCase
         $this->assertSame(['language' => 'ro'], $body['widget']);
         $this->assertFalse($body['order_info']['enabled']);
         // recommendations on, feed of the merchant: no feed URL goes out
-        $this->assertSame(['enabled' => true], $body['products']);
+        $this->assertSame(['enabled' => true, 'add_to_cart' => true], $body['products']);
 
         $this->assertFalse($this->connection->isChatEnabled());
         $this->assertFalse($this->connection->isProductsBuiltin());
@@ -1352,7 +1387,7 @@ class IntegrationTest extends TestCase
         $this->assertSame($widget, (new WidgetSettings())->withDefaults($this->connection->getWidget()));
         $this->assertTrue($this->connection->isChatEnabled());
         $this->assertSame(
-            ['products_builtin' => true, 'products_recommend' => false, 'order_enabled' => true],
+            ['products_builtin' => true, 'products_recommend' => false, 'order_enabled' => true, 'add_to_cart' => true],
             $this->integration()->effectiveSwitches()
         );
     }
@@ -1371,7 +1406,7 @@ class IntegrationTest extends TestCase
         $this->assertStringContainsString('The api url field is required.', $result['error']);
         // the form goes back to what the shop and the account still agree on
         $this->assertSame(
-            ['products_builtin' => true, 'products_recommend' => true, 'order_enabled' => true],
+            ['products_builtin' => true, 'products_recommend' => true, 'order_enabled' => true, 'add_to_cart' => true],
             $result['effective']
         );
         $this->assertTrue($this->connection->isProductsBuiltin());
@@ -1405,7 +1440,12 @@ class IntegrationTest extends TestCase
         $this->assertSame(Integration::SAVE_NEEDS_RECONNECT, $result['status']);
         $this->assertSame([], $this->calls);
         $this->assertSame(
-            ['products_builtin' => false, 'products_recommend' => false, 'order_enabled' => true],
+            [
+                'products_builtin' => false,
+                'products_recommend' => false,
+                'order_enabled' => true,
+                'add_to_cart' => true,
+            ],
             $result['effective']
         );
         $this->assertTrue($this->connection->isChatEnabled());
@@ -1443,7 +1483,12 @@ class IntegrationTest extends TestCase
         $this->assertTrue($integration->getConnection()->isProductsRecommend());
         $this->assertFalse($integration->getConnection()->isOrderEnabled());
         $this->assertSame(
-            ['products_builtin' => false, 'products_recommend' => true, 'order_enabled' => false],
+            [
+                'products_builtin' => false,
+                'products_recommend' => true,
+                'order_enabled' => false,
+                'add_to_cart' => true,
+            ],
             $result['effective']
         );
     }

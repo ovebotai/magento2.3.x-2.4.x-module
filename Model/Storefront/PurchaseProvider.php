@@ -12,6 +12,8 @@ namespace Ovebot\Chat\Model\Storefront;
 
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\Data\OrderItemInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
@@ -84,7 +86,7 @@ class PurchaseProvider
     }
 
     /**
-     * Purchases not reported yet: transaction_id, total, currency. They count as reported from now on.
+     * Purchases not reported yet: transaction_id, total, currency, items. They count as reported from now on.
      *
      * @return array
      */
@@ -121,6 +123,7 @@ class PurchaseProvider
                 // with taxes, in the currency the customer paid in
                 'total' => round((float) $order->getGrandTotal(), 2),
                 'currency' => (string) $order->getOrderCurrencyCode(),
+                'items' => $this->items($order),
             ];
             $new[] = $orderId;
         }
@@ -130,6 +133,54 @@ class PurchaseProvider
         }
 
         return $this->purchases;
+    }
+
+    /**
+     * Lines of an order, as the feed names the products
+     *
+     * The item_id is the "ref" of the feed: the product id, for a variant "{parent id}-{child id}". A configurable
+     * product makes two lines in an order, the parent with the price and a child with the simple product; the
+     * child gives the id of the variant and is not a line of its own. The unit price has the taxes in, like the
+     * feed, in the currency of the order.
+     *
+     * @param OrderInterface $order
+     * @return array [{item_id, item_name, price, quantity}, ...]
+     */
+    private function items(OrderInterface $order): array
+    {
+        $lines = [];
+        $children = [];
+        foreach ((array) $order->getItems() as $item) {
+            if (!$item instanceof OrderItemInterface) {
+                continue;
+            }
+            $parentId = (int) $item->getParentItemId();
+            if ($parentId > 0) {
+                if (!isset($children[$parentId])) {
+                    $children[$parentId] = (int) $item->getProductId();
+                }
+                continue;
+            }
+            $lines[] = $item;
+        }
+
+        $items = [];
+        foreach ($lines as $item) {
+            $id = (string) (int) $item->getProductId();
+            $itemId = (int) $item->getItemId();
+            if ($item->getProductType() === 'configurable' && isset($children[$itemId])) {
+                $id .= '-' . $children[$itemId];
+            }
+
+            $items[] = [
+                'item_id' => $id,
+                'item_name' => (string) $item->getName(),
+                'price' => round((float) $item->getPriceInclTax(), 2),
+                'quantity' => (int) $item->getQtyOrdered(),
+            ];
+        }
+
+        return $items;
     }
 
     /**

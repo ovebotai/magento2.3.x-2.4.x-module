@@ -122,6 +122,35 @@ class WidgetTest extends TestCase
         $this->assertSame('https://www.shop-test.ro/en/ovebot/preview/validate/?_nosid=1', $config['previewUrl']);
     }
 
+    public function testTheCartIsOfferedWhileTheSwitchIsOn()
+    {
+        $config = json_decode($this->block()->getConfigJson(), true);
+
+        // not set counts as on
+        $this->assertTrue($this->block()->isCartEnabled());
+        $this->assertSame(
+            [
+                'add' => 'ovebotaiAddToCart',
+                'url' => 'https://www.shop-test.ro/en/ovebot/cart/index/?_nosid=1',
+                'addUrl' => 'https://www.shop-test.ro/en/checkout/cart/add/?_nosid=1',
+                'cartUrl' => 'https://www.shop-test.ro/en/checkout/cart/?_nosid=1',
+                'checkoutUrl' => 'https://www.shop-test.ro/en/checkout/?_nosid=1',
+            ],
+            $config['cart']
+        );
+        // the chat options themselves stay as the settings give them: the scripts add the cart keys
+        $this->assertSame([], $config['chat']);
+
+        $this->connection->setAddToCart(false);
+        $config = json_decode($this->block()->getConfigJson(), true);
+        $this->assertFalse($this->block()->isCartEnabled());
+        $this->assertArrayNotHasKey('cart', $config);
+
+        // the widget off takes the cart with it
+        $this->connection->setAddToCart(true)->setChatEnabled(false);
+        $this->assertFalse($this->block()->isCartEnabled());
+    }
+
     public function testNoOptionsGiveAnObject()
     {
         $json = $this->block()->getConfigJson();

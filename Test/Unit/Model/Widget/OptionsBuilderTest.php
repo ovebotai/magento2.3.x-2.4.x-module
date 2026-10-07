@@ -156,6 +156,20 @@ class OptionsBuilderTest extends TestCase
         );
     }
 
+    public function testTheCartFollowsTheWidgetAndTheSwitch()
+    {
+        $builder = new OptionsBuilder();
+
+        $this->assertTrue($builder->isCartEnabled($this->live()));
+        $this->assertFalse($builder->isCartEnabled($this->live()->setAddToCart(false)));
+        $this->assertFalse($builder->isCartEnabled($this->live()->setChatEnabled(false)));
+        $this->assertFalse($builder->isCartEnabled($this->connection()));
+
+        // the switch changes what the storefront shows: the cached pages must go
+        $state = $builder->getState($this->live());
+        $this->assertNotSame($state, $builder->getState($this->live()->setAddToCart(false)));
+    }
+
     public function testStateOfAWidgetThatIsOffIsEmpty()
     {
         $builder = new OptionsBuilder();

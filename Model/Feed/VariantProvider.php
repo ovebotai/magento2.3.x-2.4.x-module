@@ -45,21 +45,37 @@ class VariantProvider
     private $stockInfo;
 
     /**
+     * @var GtinProvider
+     */
+    private $gtin;
+
+    /**
+     * @var GalleryProvider
+     */
+    private $galleries;
+
+    /**
      * @param ProductSelection $selection
      * @param ConfigurableLink $links
      * @param AttributeProvider $attributes
      * @param StockInfo $stockInfo
+     * @param GtinProvider $gtin
+     * @param GalleryProvider $galleries
      */
     public function __construct(
         ProductSelection $selection,
         ConfigurableLink $links,
         AttributeProvider $attributes,
-        StockInfo $stockInfo
+        StockInfo $stockInfo,
+        GtinProvider $gtin,
+        GalleryProvider $galleries
     ) {
         $this->selection = $selection;
         $this->links = $links;
         $this->attributes = $attributes;
         $this->stockInfo = $stockInfo;
+        $this->gtin = $gtin;
+        $this->galleries = $galleries;
     }
 
     /**
@@ -67,7 +83,8 @@ class VariantProvider
      *
      * @param StoreView $context
      * @param array $childIds parent id => ids of the children that pass the filter of the feed
-     * @return array parent id => [{product: Product, options: [...], stock: {availability, quantity}}, ...]
+     * @return array parent id => [{product: Product, options: [...], stock: {availability, quantity},
+     *               gallery: [url, ...]}, ...]
      */
     public function forParents(StoreView $context, array $childIds): array
     {
@@ -79,6 +96,7 @@ class VariantProvider
         $children = $this->load($context, array_merge(...array_values($childIds)), $attributeIds);
 
         $stock = $this->stockInfo->forProducts($children, $context->getWebsiteId());
+        $galleries = $this->galleries->forProducts($children, $context->getStoreId());
 
         $variants = [];
         foreach ($childIds as $parentId => $ids) {
@@ -99,6 +117,7 @@ class VariantProvider
                     'product' => $children[$childId],
                     'options' => $options,
                     'stock' => $stock[$childId],
+                    'gallery' => isset($galleries[$childId]) ? $galleries[$childId] : [],
                 ];
             }
         }
@@ -107,7 +126,7 @@ class VariantProvider
     }
 
     /**
-     * Load the children with their prices and the values of the configurable attributes
+     * Load the children with their prices, their gallery, their GTIN and the values of the configurable attributes
      *
      * @param StoreView $context
      * @param int[] $childIds
@@ -117,6 +136,9 @@ class VariantProvider
     private function load(StoreView $context, array $childIds, array $attributeIds): array
     {
         $codes = self::ATTRIBUTES;
+        if ($this->gtin->getCode() !== '') {
+            $codes[] = $this->gtin->getCode();
+        }
         foreach ($attributeIds ? array_unique(array_merge(...array_values($attributeIds))) : [] as $attributeId) {
             $code = $this->attributes->getCode((int) $attributeId);
             if ($code !== '') {

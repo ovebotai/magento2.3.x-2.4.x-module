@@ -10,6 +10,8 @@
 // It fills the queue that the scripts of Ovebot.ai read, window.ovebot_ai, then loads them:
 //   ['chat', {options}]      read by chat-loader.js
 //   ['purchase', {order}]    read by event.js, only on the order success page
+// With the "Add to cart" switch on, the chat options also name the add-to-cart function (cart.js) and carry the
+// cart of the visitor; the page is the same for every visitor (full page cache), so the cart is asked for here.
 (function () {
     'use strict';
 
@@ -18,7 +20,9 @@
         booted = false,
         // a preview link of the admin ends with #ovebot_preview={token}
         previewPattern = /(?:^#|&)ovebot_preview=([a-f0-9]{32})(?:&|$)/,
-        previewWait = 4000;
+        previewWait = 4000,
+        // the chat must not wait long for the cart: it can be sent later, by cart.js
+        cartWait = 1500;
 
     /**
      * Read the JSON of a data attribute.
@@ -72,22 +76,84 @@
     }
 
     /**
-     * Fill the queue and load the scripts of Ovebot.ai; runs once.
+     * Whether the page offers the cart to the chat (the "Add to cart" switch is on).
+     *
+     * @return {Boolean}
+     */
+    function hasCart() {
+        return !!config.cart && typeof config.cart === 'object' && typeof config.cart.url === 'string';
+    }
+
+    /**
+     * Ask the shop for the cart of the visitor: {count, items}. Answers null when it cannot be had in time.
+     *
+     * @param {Function} done
+     */
+    function fetchCart(done) {
+        var settled = false,
+            timer;
+
+        function finish(cart) {
+            if (settled) {
+                return;
+            }
+            settled = true;
+            window.clearTimeout(timer);
+            done(cart);
+        }
+
+        if (!hasCart() || typeof window.fetch !== 'function') {
+            done(null);
+
+            return;
+        }
+
+        timer = window.setTimeout(function () {
+            finish(null);
+        }, cartWait);
+
+        window.fetch(config.cart.url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(function (response) {
+            return response.ok ? response.json() : null;
+        }).then(function (data) {
+            finish(data && typeof data.count === 'number' && isArray(data.items) ? data : null);
+        })['catch'](function () {
+            finish(null);
+        });
+    }
+
+    /**
+     * Fill the queue and load the scripts of Ovebot.ai.
      *
      * @param {Boolean} autoOpen open the chat at once (preview from the admin)
+     * @param {Object|null} cart the cart of the visitor, when it was had in time
      */
-    function boot(autoOpen) {
+    function start(autoOpen, cart) {
         var chat = config.chat && typeof config.chat === 'object' ? config.chat : {},
             list = purchases(),
             i;
 
-        if (booted) {
-            return;
-        }
-        booted = true;
-
         if (autoOpen) {
             chat.auto_open = 'true';
+        }
+        if (hasCart()) {
+            // chat-loader.js reads the first 'chat' entry only: the cart keys go with the appearance
+            chat.add_to_cart = config.cart.add;
+            chat.cart_url = config.cart.cartUrl;
+            chat.checkout_url = config.cart.checkoutUrl;
+            if (cart) {
+                chat.cart_count = cart.count;
+                chat.cart_items = cart.items;
+                // what the chat knows: cart.js sends the cart again only when it differs from this
+                window.ovebotChatCartState = JSON.stringify({ count: cart.count, items: cart.items });
+            }
         }
         if (!isArray(window.ovebot_ai)) {
             window.ovebot_ai = [];
@@ -101,6 +167,22 @@
         if (list.length) {
             load(config.base + 'event.js', false);
         }
+    }
+
+    /**
+     * Boot the chat, with the cart when the page offers it; runs once.
+     *
+     * @param {Boolean} autoOpen open the chat at once (preview from the admin)
+     */
+    function boot(autoOpen) {
+        if (booted) {
+            return;
+        }
+        booted = true;
+
+        fetchCart(function (cart) {
+            start(autoOpen, cart);
+        });
     }
 
     /**

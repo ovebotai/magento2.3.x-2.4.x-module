@@ -8,7 +8,7 @@ tracks orders 24/7. Free plan for the first 200 stores. No credit card.
 | | |
 |---|---|
 | Module name | `Ovebot_Chat` |
-| Version | 1.0.0 |
+| Version | 1.1.0 |
 | Magento | Open Source and Adobe Commerce, 2.3.0 to 2.4.8 ([compatibility](#compatibility)) |
 | PHP | 7.1 or later, as required by your Magento version |
 | License | [MIT](LICENSE.txt) |
@@ -69,7 +69,8 @@ follow along.
 
 - **Product feed** with stock, prices (taxes included, in your display currency) and availability; every orderable
   variant of a configurable product is its own item
-- **Product recommendations in chat**, straight from your storefront, each linking to the real product page
+- **Product recommendations in chat**, straight from your storefront, each linking to the real product page, with
+  an **Add to cart** button that uses your theme's own add-to-cart
 - **Order tracking endpoint** that returns the order status in the customer's language and the tracking number from
   Magento's shipments, with a link to the carrier's tracking page
 - **Works with your courier out of the box** - any courier or shipping module that saves its tracking numbers the
@@ -215,7 +216,7 @@ All commands run from the Magento root directory: the folder that holds `app/`, 
 
 ### Copy the module to the server
 
-1. **Download** `ovebot-module-chat-1.0.0.zip` from the
+1. **Download** `ovebot-module-chat-1.1.0.zip` from the
    [releases of the module](https://github.com/ovebotai/magento2.3.x-2.4.x-module/releases), under **Assets**. Not
    *Source code (zip)*: that archive has another folder layout and holds the development files. Do not unzip it on
    your computer.
@@ -224,7 +225,7 @@ All commands run from the Magento root directory: the folder that holds `app/`, 
    or from a terminal on your computer:
 
    ```bash
-   scp ovebot-module-chat-1.0.0.zip user@your-server:/path/to/magento/
+   scp ovebot-module-chat-1.1.0.zip user@your-server:/path/to/magento/
    ```
 
    Uploading one zip and unzipping it on the server is safer than uploading the folder: some clients lose files
@@ -238,18 +239,18 @@ All commands run from the Magento root directory: the folder that holds `app/`, 
    cd /path/to/magento
    ```
 
-   If you skipped step 2, download the zip here, with the link of `ovebot-module-chat-1.0.0.zip` copied from the
+   If you skipped step 2, download the zip here, with the link of `ovebot-module-chat-1.1.0.zip` copied from the
    release page:
 
    ```bash
-   wget -O ovebot-module-chat-1.0.0.zip "<link of the zip>"
+   wget -O ovebot-module-chat-1.1.0.zip "<link of the zip>"
    ```
 
 4. **Unzip** into `app/code`. The zip holds the folders `Ovebot/Chat`, so the module lands in
    `app/code/Ovebot/Chat`:
 
    ```bash
-   unzip -o ovebot-module-chat-1.0.0.zip -d app/code
+   unzip -o ovebot-module-chat-1.1.0.zip -d app/code
    ```
 
    `registration.php` must end up at `app/code/Ovebot/Chat/registration.php`.
@@ -257,14 +258,14 @@ All commands run from the Magento root directory: the folder that holds `app/`, 
 5. **Check that every file arrived.** The two numbers must be equal:
 
    ```bash
-   unzip -Z1 ovebot-module-chat-1.0.0.zip | grep -v '/$' | wc -l
+   unzip -Z1 ovebot-module-chat-1.1.0.zip | grep -v '/$' | wc -l
    find app/code/Ovebot/Chat -type f | wc -l
    ```
 
    A partial copy shows up later as `Class "Ovebot\Chat\..." does not exist`. Then remove the zip:
 
    ```bash
-   rm ovebot-module-chat-1.0.0.zip
+   rm ovebot-module-chat-1.1.0.zip
    ```
 
 6. **Owner and permissions.** The files need the same owner and permissions as the rest of `app/code`. Nothing to do
@@ -408,6 +409,9 @@ Open **Settings** from the dashboard header.
 **Product feed**
 
 - **Recommend products** - whether the AI agent recommends products from your catalog.
+- **Add to cart button** - on by default; recommended products get an *Add to cart* button in the chat and the chat
+  sees the visitor's cart (see [Chat widget in the storefront](#chat-widget-in-the-storefront)). The option must
+  also be enabled in your Ovebot.ai account; it is sent there with every save.
 - **Use the built-in product feed** - switch it off if you provide your own feed; the built-in URL then returns
   *Forbidden*.
 - **Feed URL** - the feed Ovebot.ai reads periodically, with a **Copy** button.
@@ -496,11 +500,29 @@ Returns the catalog as JSON. Only enabled products with a price greater than zer
 available on backorder) are listed; a configurable product is listed once per orderable variant. Names, attributes,
 categories, links and prices (taxes included, in the display currency) are those of the default store view.
 
+Each item has `ref` (the product id, for a variant `{parent id}-{child id}`: what the storefront's add-to-cart
+takes), `name`, `description`, `category`, `manufacturer`, `availability`, `quantity`, `price`, `special`,
+`currency`, `image`, `url` and `attributes`, plus three columns present only when the product has a value:
+`sku`, `gtin` and `additional_image_link` (the other images of the gallery, as absolute URLs, in their order).
+Magento has no GTIN attribute of its own: under **Stores > Configuration > Ovebot AI > Product feed > GTIN
+attribute** choose the product attribute that holds the EAN/GTIN/UPC code. The default, *Auto-detect*, takes the
+first existing attribute named `gtin`, `ean`, `ean13`, `upc`, `barcode` or `isbn`.
+
 The feed is written to `var/ovebot_chat/feed/` by the first request and served from there for the next 30 minutes,
 so no cron job is needed and Ovebot.ai does not wait for a rebuild on every read. While a newer feed is being written,
 other requests get the previous one; while the very first one is being written, they wait up to a minute, then get
 `503` with `Retry-After`. The `hash` is the secret shown on the Settings page; a wrong
 hash, or the built-in feed being switched off, returns `403 Forbidden`.
+
+### Cart of the visitor
+
+```
+POST <store URL>/ovebot/cart/index/
+```
+
+Answers `{"count": 3, "items": [{"ref": "1042", "sku": "WHP-001-BLK", "name": "…", "price": 249.99, "currency":
+"RON", "quantity": 2}]}` for the cart of the visitor who asks (the session cookie), never cached; `403` while the
+chat or the **Add to cart button** switch is off. Read by `cart.js` only.
 
 ### Order lookup
 
@@ -611,8 +633,19 @@ has no inline script.
   cache tag `ovebot_chat_widget`; when a change reaches the storefront (chat switched on or off, appearance, setup
   finished, store disconnected or connected to another agent), the module cleans that tag, so the change is seen at
   once. As the widget is on every page, this empties the full page cache.
+- **Add to cart and the cart.** With the **Add to cart button** switch on, the block loads a second script,
+  `Ovebot_Chat::js/cart.js`, and the chat options name `window.ovebotaiAddToCart` and carry the cart and checkout
+  links. The cart of the visitor is asked from `POST ovebot/cart/index` when the page opens (the page itself is the
+  same for every visitor, see the full page cache below) and after every change of the cart: an add, a change or a
+  removal in the cart or the mini-cart, read from the `cart` section of Magento's customer data on Luma and from the
+  `private-content-loaded` event on Hyvä. A product the chat adds goes through the add-to-cart of the theme, on
+  Luma the `catalogAddToCart` widget, so the mini-cart, the messages and the tracking events run as for a click;
+  a theme without it gets a direct request to `checkout/cart/add` with the form key. A product that needs options
+  is sent to its page; on the cart page a successful add reloads the page. The endpoint answers `403` while the
+  chat or the switch is off.
 - **Purchases.** The order success page (`checkout_onepage_success`, and `multishipping_checkout_success` for orders
-  to several addresses) reports each order to the AI agent once: its id, its grand total and its currency. The orders
+  to several addresses) reports each order to the AI agent once: its id, its grand total, its currency and its lines
+  (product id as in the feed, name, unit price with taxes, quantity, in the currency of the order). The orders
   are the ones Magento names in the events `checkout_onepage_controller_success_action` and
   `multishipping_checkout_controller_success_action`. A checkout extension with its own success page is covered
   when that page uses one of these layout handles and dispatches the event, as it must for Google Analytics.

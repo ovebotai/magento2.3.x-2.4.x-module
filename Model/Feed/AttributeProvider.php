@@ -163,6 +163,32 @@ class AttributeProvider
     }
 
     /**
+     * Value of any attribute of a product, by code, on one line; empty when the attribute or the value is missing
+     *
+     * @param string $code
+     * @param Product $product
+     * @param int $storeId
+     * @return string
+     */
+    public function read(string $code, Product $product, int $storeId): string
+    {
+        $attribute = $code !== '' ? $this->attribute($code, $storeId) : null;
+
+        return $attribute !== null ? $this->text->line($this->value($attribute, $product)) : '';
+    }
+
+    /**
+     * Whether a product attribute with this code exists
+     *
+     * @param string $code
+     * @return bool
+     */
+    public function exists(string $code): bool
+    {
+        return $code !== '' && $this->attribute($code, 0) !== null;
+    }
+
+    /**
      * One option a configurable product is chosen by, as a child has it
      *
      * @param int $attributeId

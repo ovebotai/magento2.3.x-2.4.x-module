@@ -27,6 +27,7 @@ define(['jquery'], function ($) {
                 'chat_status': ['#oveChatStatus', '#oveChatStatusLbl'],
                 'products_builtin': ['#oveProductsBuiltin', '#oveProductsBuiltinLbl'],
                 'products_recommend': ['#oveProductsRecommend', '#oveProductsRecommendLbl'],
+                'add_to_cart': ['#oveAddToCart', '#oveAddToCartLbl'],
                 'order_enabled': ['#oveOrderEnabled', '#oveOrderEnabledLbl']
             };
 

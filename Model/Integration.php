@@ -36,7 +36,6 @@ use Psr\Log\LoggerInterface;
  */
 class Integration
 {
-    public const REGISTER_PLAN = 'wp-freemium';
     public const FLASH_TTL = 900;
     public const FLASH_MAX_LENGTH = 300;
 
@@ -559,6 +558,7 @@ class Integration
      * @param bool $productsBuiltin
      * @param bool $productsRecommend
      * @param bool $orderEnabled
+     * @param bool|null $addToCart null keeps the stored value
      * @return array ['status' => one of the SAVE_* constants, 'error' => string, 'effective' => array]
      */
     public function saveSettings(
@@ -566,12 +566,15 @@ class Integration
         array $widget,
         bool $productsBuiltin,
         bool $productsRecommend,
-        bool $orderEnabled
+        bool $orderEnabled,
+        ?bool $addToCart = null
     ): array {
         $switches = [
             'products_builtin' => $productsBuiltin,
             'products_recommend' => $productsRecommend,
             'order_enabled' => $orderEnabled,
+            // null: the "Add to cart" switch keeps its stored value
+            'add_to_cart' => $addToCart === null ? $this->connection->isAddToCart() : $addToCart,
         ];
 
         $this->connection->setChatEnabled($chatEnabled);
@@ -601,9 +604,10 @@ class Integration
     }
 
     /**
-     * The stored values of the three switches that the account mirrors
+     * The stored values of the switches that the account mirrors
      *
-     * @return array ['products_builtin' => bool, 'products_recommend' => bool, 'order_enabled' => bool]
+     * @return array ['products_builtin' => bool, 'products_recommend' => bool, 'order_enabled' => bool,
+     *               'add_to_cart' => bool]
      */
     public function effectiveSwitches(): array
     {
@@ -611,6 +615,7 @@ class Integration
             'products_builtin' => $this->connection->isProductsBuiltin(),
             'products_recommend' => $this->connection->isProductsRecommend(),
             'order_enabled' => $this->connection->isOrderEnabled(),
+            'add_to_cart' => $this->connection->isAddToCart(),
         ];
     }
 
@@ -817,7 +822,7 @@ class Integration
      */
     public function getRegisterUrl(): string
     {
-        return $this->client->buildRegisterUrl(self::REGISTER_PLAN, $this->storeView->getDomain());
+        return $this->client->buildRegisterUrl($this->storeView->getDomain());
     }
 
     /**
@@ -1112,6 +1117,9 @@ class Integration
         $this->connection->setProductsBuiltin((bool) $switches['products_builtin']);
         $this->connection->setProductsRecommend((bool) $switches['products_recommend']);
         $this->connection->setOrderEnabled((bool) $switches['order_enabled']);
+        if (array_key_exists('add_to_cart', $switches)) {
+            $this->connection->setAddToCart((bool) $switches['add_to_cart']);
+        }
     }
 
     /**

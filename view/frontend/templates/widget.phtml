@@ -19,3 +19,6 @@ $escaper = isset($escaper) ? $escaper : $block;
 <div id="ovebot-chat-config" hidden="hidden"
      data-config="<?= $escaper->escapeHtmlAttr($block->getConfigJson()) ?>"></div>
 <script src="<?= $escaper->escapeUrl($block->getScriptUrl()) ?>" async="async"></script>
+<?php if ($block->isCartEnabled()): ?>
+<script src="<?= $escaper->escapeUrl($block->getCartScriptUrl()) ?>" async="async"></script>
+<?php endif; ?>

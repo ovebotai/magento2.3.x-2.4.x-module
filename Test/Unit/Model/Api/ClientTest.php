@@ -125,8 +125,8 @@ class ClientTest extends TestCase
     public function testRegisterUrl()
     {
         $this->assertSame(
-            'https://account.ovebot.ai/register?plan=wp-freemium&domain=shop.ro',
-            $this->client()->buildRegisterUrl('wp-freemium', 'shop.ro')
+            'https://account.ovebot.ai/register?domain=shop.ro',
+            $this->client()->buildRegisterUrl('shop.ro')
         );
     }
 

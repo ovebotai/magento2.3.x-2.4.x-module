@@ -83,6 +83,16 @@ class ProductFeedBuilder
     private $mediaConfig;
 
     /**
+     * @var GtinProvider
+     */
+    private $gtin;
+
+    /**
+     * @var GalleryProvider
+     */
+    private $galleries;
+
+    /**
      * @var string|null base URL of the storefront, once read
      */
     private $baseUrl;
@@ -97,6 +107,8 @@ class ProductFeedBuilder
      * @param PriceResolver $priceResolver
      * @param ItemMapper $mapper
      * @param MediaConfig $mediaConfig
+     * @param GtinProvider $gtin
+     * @param GalleryProvider $galleries
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
@@ -108,7 +120,9 @@ class ProductFeedBuilder
         StockInfo $stockInfo,
         PriceResolver $priceResolver,
         ItemMapper $mapper,
-        MediaConfig $mediaConfig
+        MediaConfig $mediaConfig,
+        GtinProvider $gtin,
+        GalleryProvider $galleries
     ) {
         $this->storeContext = $storeContext;
         $this->selection = $selection;
@@ -119,6 +133,8 @@ class ProductFeedBuilder
         $this->priceResolver = $priceResolver;
         $this->mapper = $mapper;
         $this->mediaConfig = $mediaConfig;
+        $this->gtin = $gtin;
+        $this->galleries = $galleries;
     }
 
     /**
@@ -130,7 +146,6 @@ class ProductFeedBuilder
     public function iterate(int $afterId = 0): \Generator
     {
         $context = $this->storeContext->get();
-        $this->mapper->reset();
         $lastId = max(0, $afterId);
 
         do {
@@ -181,7 +196,6 @@ class ProductFeedBuilder
         }
 
         $context = $this->storeContext->get();
-        $this->mapper->reset();
 
         $collection = $this->collection($context);
         // twice as many: a product may give no item (no variant for sale, a price of zero)
@@ -237,6 +251,7 @@ class ProductFeedBuilder
         $plan = $this->selection->plan($context, $types);
         $standalone = array_flip($plan['standalone']);
         $categories = $this->categoryPaths->forProducts($categoryIds, $context);
+        $galleries = $this->galleries->forProducts($products, $context->getStoreId());
         $stock = $this->stockInfo->forProducts(
             array_intersect_key($products, $standalone),
             $context->getWebsiteId()
@@ -255,7 +270,7 @@ class ProductFeedBuilder
                     $loaded = $this->loadOf($loads, $productId);
                     $variants = $this->variantProvider->forParents($context, $loaded);
                 }
-                $common = $this->common($context, $product, $category);
+                $common = $this->common($context, $product, $category, $galleries);
                 foreach (isset($variants[$productId]) ? $variants[$productId] : [] as $variant) {
                     $item = $this->variant($context, $common, $product, $variant);
                     if ($item !== null) {
@@ -266,7 +281,7 @@ class ProductFeedBuilder
             }
 
             if (isset($standalone[$productId], $stock[$productId])) {
-                $common = $this->common($context, $product, $category);
+                $common = $this->common($context, $product, $category, $galleries);
                 $item = $this->single($context, $common, $product, $stock[$productId]);
                 if ($item !== null) {
                     yield $item;
@@ -276,15 +291,18 @@ class ProductFeedBuilder
     }
 
     /**
-     * What an item takes from the product page: texts, category, attributes, image and URL
+     * What an item takes from the product page: texts, category, attributes, GTIN, images and URL
      *
      * @param StoreView $context
      * @param Product $product
      * @param string $category
+     * @param array $galleries product id => URLs of the other images
      * @return array
      */
-    private function common(StoreView $context, Product $product, string $category): array
+    private function common(StoreView $context, Product $product, string $category, array $galleries): array
     {
+        $productId = (int) $product->getId();
+
         return [
             'name' => (string) $product->getName(),
             'description' => (string) $product->getData('description'),
@@ -293,8 +311,10 @@ class ProductFeedBuilder
             'manufacturer' => $this->attributes->getManufacturer($product, $context->getStoreId()),
             'currency' => $this->priceResolver->getCurrencyCode($context),
             'image' => $this->image($product),
+            'additional_image_link' => isset($galleries[$productId]) ? $galleries[$productId] : [],
             'url' => $this->url($context, $product),
             'attributes' => $this->attributes->values($product, $context->getStoreId()),
+            'gtin' => $this->gtin->get($product, $context->getStoreId()),
             'options' => [],
         ];
     }
@@ -325,12 +345,13 @@ class ProductFeedBuilder
      * Item of one child of a configurable product
      *
      * The texts, the category and the URL are the ones of the parent, where the visitor buys the variant. The
-     * SKU, the price and the stock are the ones of the child, and so is the image, when the child has one.
+     * SKU, the price and the stock are the ones of the child, and so are the images and the GTIN, when the child
+     * has them.
      *
      * @param StoreView $context
      * @param array $common of the parent
      * @param Product $parent
-     * @param array $variant {product, options, stock}
+     * @param array $variant {product, options, stock, gallery}
      * @return array|null null when the price comes out as zero
      */
     private function variant(StoreView $context, array $common, Product $parent, array $variant): ?array
@@ -344,11 +365,15 @@ class ProductFeedBuilder
         }
 
         $image = $this->image($child);
+        $gallery = $variant['gallery'];
+        $gtin = $this->gtin->get($child, $context->getStoreId());
 
         return $this->mapper->map([
             'id' => (int) $parent->getId() . '-' . (int) $child->getId(),
             'sku' => (string) $child->getSku(),
             'image' => $image !== '' ? $image : $common['image'],
+            'additional_image_link' => $gallery ? $gallery : $common['additional_image_link'],
+            'gtin' => $gtin !== '' ? $gtin : $common['gtin'],
             'options' => $variant['options'],
         ] + $variant['stock'] + $prices + $common);
     }

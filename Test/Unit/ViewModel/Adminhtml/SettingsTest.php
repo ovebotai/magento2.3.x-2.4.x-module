@@ -39,6 +39,7 @@ class SettingsTest extends TestCase
         $connection->method('isProductsBuiltin')->willReturn(false);
         $connection->method('isProductsRecommend')->willReturn(true);
         $connection->method('isOrderEnabled')->willReturn(false);
+        $connection->method('isAddToCart')->willReturn(false);
 
         $storeView = $this->createMock(StoreView::class);
         $storeView->method('getFeedUrl')->willReturnCallback(function ($hash) {
@@ -79,6 +80,7 @@ class SettingsTest extends TestCase
         $this->assertFalse($settings->isProductsBuiltin());
         $this->assertTrue($settings->isProductsRecommend());
         $this->assertFalse($settings->isOrderEnabled());
+        $this->assertFalse($settings->isAddToCart());
         $this->assertSame(
             'https://www.shop-test.ro/ovebot/feed/index/?hash=' . str_repeat('a', 32),
             $settings->getFeedUrl()

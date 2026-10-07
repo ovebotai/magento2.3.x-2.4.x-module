@@ -7,6 +7,7 @@
 Active,Active
 "Add carrier","Add carrier"
 "add one here","add one here"
+"Add to cart button","Add to cart button"
 "Adjust the value to place the chat widget below/above another element on the page.","Adjust the value to place the chat widget below/above another element on the page."
 "AI Chat Agent","AI Chat Agent"
 "All done!","All done!"
@@ -18,6 +19,7 @@ Appearance,Appearance
 "Audio beep","Audio beep"
 "Authorization was cancelled.","Authorization was cancelled."
 "Auto (browser)","Auto (browser)"
+"Auto-detect","Auto-detect"
 "Bottom left","Bottom left"
 "Bottom right","Bottom right"
 "Carrier code","Carrier code"
@@ -71,6 +73,7 @@ General,General
 "Generates a new user/password pair. The old ones will stop working immediately.","Generates a new user/password pair. The old ones will stop working immediately."
 "Go live","Go live"
 "Go to settings","Go to settings"
+"GTIN attribute","GTIN attribute"
 here,here
 "I already have an account","I already have an account"
 "I'll provide my own feed","I'll provide my own feed"
@@ -160,6 +163,7 @@ Subtitle,Subtitle
 "The feed is rebuilt every 30 minutes at most, so catalog changes reach your AI agent with a short delay.","The feed is rebuilt every 30 minutes at most, so catalog changes reach your AI agent with a short delay."
 "The host ""%1"" is not valid. Enter a host name without protocol and without path, for example api.ovebot.ai.","The host ""%1"" is not valid. Enter a host name without protocol and without path, for example api.ovebot.ai."
 "The Ovebot.ai connection could not be saved.","The Ovebot.ai connection could not be saved."
+"The product attribute that holds the EAN/GTIN/UPC code, sent in the feed as ""gtin"". Auto-detect looks for an attribute named gtin, ean, ean13, upc, barcode or isbn.","The product attribute that holds the EAN/GTIN/UPC code, sent in the feed as ""gtin"". Auto-detect looks for an attribute named gtin, ean, ean13, upc, barcode or isbn."
 Theme,Theme
 "These are the resources your AI agent uses to answer customer questions in the chat. Editing one of the selected pages in Magento updates its entry here automatically - or use ""Edit on Ovebot.ai"" below to change it directly.","These are the resources your AI agent uses to answer customer questions in the chat. Editing one of the selected pages in Magento updates its entry here automatically - or use ""Edit on Ovebot.ai"" below to change it directly."
 "Token request failed (HTTP %1).","Token request failed (HTTP %1)."
@@ -171,6 +175,7 @@ Theme,Theme
 "Use {code} where the tracking number goes, e.g. https://sameday.ro/#awb={code}","Use {code} where the tracking number goes, e.g. https://sameday.ro/#awb={code}"
 "View page","View page"
 "Website pages","Website pages"
+"When enabled, recommended products get an ""Add to cart"" button in the chat and the chat shows the visitor's cart. The option must also be enabled in your Ovebot.ai account.","When enabled, recommended products get an ""Add to cart"" button in the chat and the chat shows the visitor's cart. The option must also be enabled in your Ovebot.ai account."
 "When enabled, the AI agent's chat bubble appears on the pages of your site, except the checkout page, so customers can start a conversation.","When enabled, the AI agent's chat bubble appears on the pages of your site, except the checkout page, so customers can start a conversation."
 "When enabled, your AI agent can look up order status and tracking.","When enabled, your AI agent can look up order status and tracking."
 "When enabled, your AI agent recommends products from your catalog in conversations.","When enabled, your AI agent recommends products from your catalog in conversations."

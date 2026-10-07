@@ -25,6 +25,7 @@ class StoreView
     public const ROUTE_ORDERS = 'ovebot/orders/index';
     public const ROUTE_OAUTH_CALLBACK = 'ovebot/oauth/callback';
     public const ROUTE_PREVIEW_VALIDATE = 'ovebot/preview/validate';
+    public const ROUTE_CART = 'ovebot/cart/index';
 
     /**
      * @var Store

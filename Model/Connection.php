@@ -293,6 +293,29 @@ class Connection extends AbstractModel
     }
 
     /**
+     * Whether the chat offers an "Add to cart" button and sees the cart; not set means on
+     *
+     * The shop is the only source: the account mirrors the value through the setup, and never sends it back.
+     *
+     * @return bool
+     */
+    public function isAddToCart(): bool
+    {
+        return $this->getSwitch('add_to_cart');
+    }
+
+    /**
+     * Set the "Add to cart" switch; null means not set
+     *
+     * @param bool|null $enabled
+     * @return $this
+     */
+    public function setAddToCart(?bool $enabled)
+    {
+        return $this->setSwitch('add_to_cart', $enabled);
+    }
+
+    /**
      * Whether order tracking is on; not set means on
      *
      * @return bool
